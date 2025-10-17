@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Streamlit: Debug",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": ["run", "${workspaceFolder}/main.py"],
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true,
+      "subProcess": true
+    }
+  ]
+}
