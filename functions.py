@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import os
-from supabase import create_client
 from dotenv import load_dotenv
+from supabase import create_client, Client
 
 load_dotenv()
 # url = os.getenv("SUPABASE_URL")
