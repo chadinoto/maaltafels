@@ -8,8 +8,12 @@ from supabase import create_client
 from dotenv import load_dotenv
 
 load_dotenv()
-url = os.getenv("SUPABASE_URL")
-key = os.getenv("SUPABASE_ANON_KEY")
+# url = os.getenv("SUPABASE_URL")
+# key = os.getenv("SUPABASE_ANON_KEY")
+# sb = create_client(url, key)
+
+url = st.secrets["SUPABASE_URL"]
+key = st.secrets["SUPABASE_ANON_KEY"]
 sb = create_client(url, key)
 
 # DATA_PATH = "data"
