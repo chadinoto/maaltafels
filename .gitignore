@@ -1,0 +1,4 @@
+# add .env
+.env
+# ignore data files
+data/
