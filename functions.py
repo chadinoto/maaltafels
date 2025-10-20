@@ -22,21 +22,35 @@ sb = create_client(url, key)
 # SCORE_FILE = os.path.join(DATA_PATH, "scores.csv")
 
 
-def generate_exercise(accepted_products):
+def generate_exercise(accepted_products, level="Moeilijk", exercise_idx=0):
     random_accepted_product = accepted_products[
         random.randint(0, len(accepted_products) - 1)
     ]
+    if level == "Moeilijk":
+        table_probs = get_table_probs(random_accepted_product)
 
-    table_probs = get_table_probs(random_accepted_product)
+        # choose a rand index from df table_probs based on probability in PROBABILITY col
+        random_number = int(
+            random.choices(
+                table_probs["RAND_NUM"].tolist(),
+                weights=table_probs["PROBABILITY"].tolist(),
+                k=1,
+            )[0]
+        )
+        
+    elif level == "Middelmatig":
+        random_number = random.randint(1, 10)
+    
+    else:
 
-    # choose a rand index from df table_probs based on probability in PROBABILITY col
-    random_number = int(
-        random.choices(
-            table_probs["RAND_NUM"].tolist(),
-            weights=table_probs["PROBABILITY"].tolist(),
-            k=1,
-        )[0]
-    )
+        if (exercise_idx + 1) <= 10:
+            random_number = exercise_idx + 1
+        else: 
+            random_number = (exercise_idx+1) % 10
+        
+        if random_number == 0:
+            random_number = 10
+        
 
     correct_answer = random_number * random_accepted_product
 
@@ -335,7 +349,7 @@ def restart():
         st.session_state.correct,
         st.session_state.x1,
         st.session_state.x2,
-    ) = generate_exercise(st.session_state.selected_tables)
+    ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
     st.session_state.exercise_counter = 0
     st.session_state.last_result = None
     st.rerun()
@@ -345,6 +359,7 @@ def restart():
 def init_session_state(generate_exercise, reset_progress):
     defaults = {
         "user": "Raphael",
+        "difficulty_level": "Moeilijk",
         "starttime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "n_exercises": 20,
         "selected_tables": [2, 3, 4, 5, 6, 7, 8, 9],
@@ -374,7 +389,7 @@ def init_session_state(generate_exercise, reset_progress):
             st.session_state.correct,
             st.session_state.x1,
             st.session_state.x2,
-        ) = generate_exercise(st.session_state.selected_tables)
+        ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
         st.session_state.last_result = None
         st.session_state.prev_exercise = None
         st.session_state.prev_correct = None
