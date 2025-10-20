@@ -88,8 +88,8 @@ with tab_oef:
                 st.session_state.last_result = (
                     "correct" if user_answer == st.session_state.correct else "wrong"
                 )
-                add_score_row()
-
+                # add_score_row()
+                add_answer_row_to_db()
                 (
                     st.session_state.exercise,
                     st.session_state.correct,
@@ -154,7 +154,7 @@ with tab_stats:
         df = create_calendar_table(
             df_scores[df_scores["NAME"] == st.session_state.user]
         )
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width="stretch")
 
         st.subheader("Prestaties per tafel")
         tafel_stats = (
@@ -177,7 +177,7 @@ with tab_stats:
         st.dataframe(
             tafel_stats,
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "Tafel": st.column_config.TextColumn(width="small"),
                 "Percentage juist": st.column_config.TextColumn(width="medium"),
@@ -190,7 +190,7 @@ with tab_stats:
         st.dataframe(
             prob_table,
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "Tafel": st.column_config.TextColumn(width="small"),
                 "Kans gekozen te worden": st.column_config.TextColumn(width="medium"),
@@ -202,7 +202,7 @@ with tab_stats:
         st.dataframe(
             time_table,
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "Tafel": st.column_config.TextColumn(width="small"),
                 "Gemiddelde tijd (s)": st.column_config.TextColumn(width="medium"),
@@ -214,7 +214,7 @@ with tab_stats:
         st.dataframe(
             score_table,
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "Tafel": st.column_config.TextColumn(width="small"),
                 "Gemiddelde score": st.column_config.TextColumn(width="medium"),
@@ -250,7 +250,6 @@ with tab_stats:
 
 # (3) SIDEBAR ----
 st.sidebar.title("Instellingen")
-
 with st.sidebar.form("settings"):
     # Get current user index, defaulting to 0 (Raphael) if not found
     USERS = ["Raphael", "Mama", "Papa", "Lea"]
@@ -277,6 +276,7 @@ with st.sidebar.form("settings"):
         key="pending_n_exercises",
     )
     apply = st.form_submit_button("OK")
+
 
 if apply:
     if st.session_state.pending_selected_tables:

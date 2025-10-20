@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import os
+import re
 
 # from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -147,6 +148,42 @@ def read_score_df(user_id=None, limit=1000):
         return pd.DataFrame()
 
 
+def add_answer_row_to_db():
+    """Add a single row to the results table in Supabase."""
+    score_flag = 1 if st.session_state.user_answer == st.session_state.correct else 0.1
+    duration = min(
+        10,
+        (
+            float(st.session_state.duration_time)
+            if st.session_state.duration_time
+            else 0.0
+        ),
+    )
+
+    # safe model score: higher when fast & correct
+    eps = 1e-6
+    model_score = score_flag / max(duration, eps)
+
+    row = {
+        "name": st.session_state.user,
+        "datetime_start": st.session_state.starttime.strftime("%Y-%m-%d %H:%M:%S"),
+        "date_start": st.session_state.starttime.strftime("%Y-%m-%d"),
+        "time_start": st.session_state.starttime.strftime("%H:%M:%S"),
+        "exercise_idx": st.session_state.exercise_counter,
+        "tafel": st.session_state.x1,
+        "rand_num": st.session_state.x2,
+        "user_answer": st.session_state.user_answer,
+        "score": score_flag,
+        "duration_time": duration,  # max of 10 and duration
+        "model_score": model_score,
+        "probability": 0,  # temp; we recompute below for all rows
+    }
+
+    response = sb.table("results").insert(row).execute()
+
+    print(f"SUCCES - Toegevoegd aan DB: {response.data}")
+
+
 def save_score_df(df, user_id=None):
     """Write new score rows to Supabase."""
     try:
@@ -155,10 +192,10 @@ def save_score_df(df, user_id=None):
 
         # Ensure all JSON-serializable values
         df = df.copy()
-        if "datetime_start" in df:
-            df["datetime_start"] = pd.to_datetime(
-                df["datetime_start"], errors="coerce"
-            ).dt.strftime("%Y-%m-%d %H:%M:%S")
+        # if "datetime_start" in df:
+        #     df["datetime_start"] = pd.to_datetime(
+        #         df["datetime_start"], errors="coerce"
+        #     ).dt.strftime("%Y-%m-%d %H:%M:%S")
         if "date_start" in df:
             df["date_start"] = pd.to_datetime(
                 df["date_start"], errors="coerce"
@@ -214,12 +251,12 @@ def add_score_row():
         "SCORE": score_flag,
         "DURATION_TIME": duration,  # max of 10 and duration
         "MODEL_SCORE": model_score,
-        "PROBABILITY": float("nan"),  # temp; we recompute below for all rows
+        "PROBABILITY": 0,  # temp; we recompute below for all rows
     }
 
     df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
 
-    df = add_prob(df)
+    # df = add_prob(df)
     # Sort so weakest (lowest model_score) float to top if you like
     df = df.sort_values(by="MODEL_SCORE", ascending=True, kind="stable")
 
@@ -283,7 +320,6 @@ def get_table_probs(table):
         table_stats["PROBABILITY"] / table_stats["PROBABILITY"].sum()
     )
 
-    print(table_stats)
     return table_stats
 
 
@@ -442,7 +478,8 @@ def highlight_cells(val):
         return ""
     # Extract the minutes value from the text
     try:
-        minutes = float(val.split("\n[")[1].replace(" min]", ""))
+        # Extract minutes from text like "2024-01-15\n[Timer: 5 min, score: 80%]"
+        minutes = float(re.search(r"Time:\s*(\d+)\s*min", val).group(1))
         if minutes >= 10:
             return "background-color: green; color: white; font-weight: bold;"
         elif minutes > 0:
@@ -454,10 +491,13 @@ def highlight_cells(val):
 
 
 def create_calendar_table(df):
+    df["SCORE"] = df["SCORE"].apply(lambda d: 0 if d == 0.1 else d)
+
     df_per_day = (
         df.groupby(["DATE_START"], as_index=False)
-        .agg(SEC_PER_DAG=("DURATION_TIME", "sum"))
+        .agg(SEC_PER_DAG=("DURATION_TIME", "sum"), SCORE_PER_DAG=("SCORE", "mean"))
         .assign(MIN_PER_DAG=lambda x: x["SEC_PER_DAG"] / 60)
+        .assign(SCORE_PER_DAG=lambda x: (x["SCORE_PER_DAG"].fillna(0).round(2) * 100))
     )
 
     # add rows for missing DATE_START until today
@@ -485,17 +525,30 @@ def create_calendar_table(df):
         df_per_day.assign(DATE_START=pd.to_datetime(df_per_day["DATE_START"]))
         .assign(WEEKDAY=lambda x: x["DATE_START"].dt.day_name())
         .assign(
-            TEXT=lambda x: x["DATE_START"].dt.strftime("%Y-%m-%d")
-            + "\n["
+            TEXT=lambda x: "Time: "
             + x["MIN_PER_DAG"].apply(lambda y: str(int(np.ceil(y))))
-            + " min]"
+            + " min"
+            + ", score: "
+            + x["SCORE_PER_DAG"].fillna(0).apply(lambda y: str(int(y)))
+            + "%"
         )
         .assign(WEEK=lambda x: x["DATE_START"].dt.isocalendar().week)
-        .groupby(["WEEK", "WEEKDAY"], as_index=False)
+        .assign(
+            MONDAY_DATE=lambda x: x["DATE_START"]
+            - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
+        )
+        .assign(
+            WEEK_LABEL=lambda x: "Week "
+            + x["WEEK"].astype(str)
+            + " ("
+            + x["MONDAY_DATE"].dt.strftime("%d/%m")
+            + ")"
+        )
+        .groupby(["WEEK_LABEL", "WEEKDAY"], as_index=False)
         .agg(TEXT=("TEXT", "first"))
-        .pivot(index="WEEK", columns="WEEKDAY", values="TEXT")
+        .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
     )
 
     # Apply styling to the DataFrame
-    df_calendar_styled = df_calendar.style.applymap(highlight_cells)
+    df_calendar_styled = df_calendar.style.map(highlight_cells)
     return df_calendar_styled
