@@ -538,7 +538,7 @@ def create_calendar_table(df):
             - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
         )
         .assign(
-            WEEK_LABEL=lambda x: "Week "
+            WEEK_LABEL=lambda x: "Week "    
             + x["WEEK"].astype(str)
             + " ("
             + x["MONDAY_DATE"].dt.strftime("%d/%m")

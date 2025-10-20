@@ -17,7 +17,9 @@ init_session_state(generate_exercise, reset_progress)
 
 # ✅ Reset the input BEFORE rendering the widget (and BEFORE the form)
 if st.session_state.reset_answer:
-    st.session_state.user_answer_str = ""
+    # st.session_state.user_answer_str = ""
+    st.session_state.user_answer_num = None
+
     st.session_state.reset_answer = False
 
 
@@ -45,18 +47,23 @@ with tab_oef:
         restart()
 
     # (2.2) Oefening generate ----
-    if (
-        st.session_state.status
-        and st.session_state.exercise_counter < st.session_state.n_exercises
-    ):
+    if st.session_state.status and st.session_state.exercise_counter < st.session_state.n_exercises:
         st.write(f"Volgende oefening: **{st.session_state.exercise}**")
 
         # (2.3) Antwoord capture ----
 
         with st.form("answer_form"):
-            st.text_input(
+            # st.text_input(
+            #     "Jouw antwoord:",
+            #     key="user_answer_str",
+            #     placeholder="Typ je antwoord...",
+            # )
+            st.number_input(
                 "Jouw antwoord:",
-                key="user_answer_str",
+                key="user_answer_num",
+                value=None,
+                step=1,
+                format="%d",
                 placeholder="Typ je antwoord...",
             )
 
@@ -72,7 +79,9 @@ with tab_oef:
         st.session_state.duration_time = round(delta.total_seconds(), 3)
         st.session_state.duration_time_start = datetime.now()
 
-        raw = st.session_state.user_answer_str.strip()
+        # raw = st.session_state.user_answer_str.strip()
+        raw = st.session_state.user_answer_num
+
         st.session_state.exercise_counter = st.session_state.exercise_counter + 1
         if not raw:
             st.warning("Vul eerst een antwoord in.")
@@ -85,9 +94,7 @@ with tab_oef:
             else:
                 st.session_state.prev_exercise = st.session_state.exercise
                 st.session_state.prev_correct = st.session_state.correct
-                st.session_state.last_result = (
-                    "correct" if user_answer == st.session_state.correct else "wrong"
-                )
+                st.session_state.last_result = "correct" if user_answer == st.session_state.correct else "wrong"
                 # add_score_row()
                 add_answer_row_to_db()
                 (
@@ -128,9 +135,7 @@ with tab_oef:
 
     # (2.7) Controle check text: succes / wrong
     if st.session_state.last_result == "correct":
-        st.success(
-            f"✅ Correct! {st.session_state.prev_exercise} = {st.session_state.prev_correct}"
-        )
+        st.success(f"✅ Correct! {st.session_state.prev_exercise} = {st.session_state.prev_correct}")
 
     elif st.session_state.last_result == "wrong":
         st.error(
@@ -151,9 +156,7 @@ with tab_stats:
     else:
         st.subheader("Tijd geoefend per dag")
         # display calendar table
-        df = create_calendar_table(
-            df_scores[df_scores["NAME"] == st.session_state.user]
-        )
+        df = create_calendar_table(df_scores[df_scores["NAME"] == st.session_state.user])
         st.dataframe(df, width="stretch")
 
         st.subheader("Prestaties per tafel")
@@ -224,9 +227,7 @@ with tab_stats:
         st.subheader("Recente gedetailleerde resultaten")
         st.dataframe(
             (
-                df_scores.sort_values(
-                    by=["DATE_START", "TIME_START"], ascending=[False, False]
-                )
+                df_scores.sort_values(by=["DATE_START", "TIME_START"], ascending=[False, False])
                 .drop(
                     columns=[
                         "DATETIME_START",
@@ -235,13 +236,7 @@ with tab_stats:
                         "PROBABILITY",
                     ]
                 )
-                .assign(
-                    **{
-                        "RESULTAAT": lambda x: x["SCORE"].apply(
-                            lambda score: "✅" if score == 1 else "❌"
-                        )
-                    }
-                )
+                .assign(**{"RESULTAAT": lambda x: x["SCORE"].apply(lambda score: "✅" if score == 1 else "❌")})
                 .drop(columns=["SCORE"])
             ),
             hide_index=True,
