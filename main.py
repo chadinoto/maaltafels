@@ -102,7 +102,7 @@ with tab_oef:
                     st.session_state.correct,
                     st.session_state.x1,
                     st.session_state.x2,
-                ) = generate_exercise(st.session_state.selected_tables)
+                ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, st.session_state.exercise_counter)
                 # schedule clearing input on next run (don't touch the key now)
                 st.session_state.reset_answer = True
                 st.rerun()
@@ -254,6 +254,13 @@ with st.sidebar.form("settings"):
         options=USERS,
         key="pending_user",  # keeps value across reruns
     )
+    
+    st.selectbox(
+        "Kies niveau van moeilijkheid:",
+        options=["Makkelijk", "Middelmatig","Moeilijk"],
+        key = "pending_difficulty_level",
+    )
+    
 
     st.multiselect(
         "Kies de tafel(s) die je wil oefenen:",
@@ -278,13 +285,14 @@ if apply:
         st.session_state.selected_tables = st.session_state.pending_selected_tables
         st.session_state.user = st.session_state.pending_user
         st.session_state.n_exercises = int(st.session_state.pending_n_exercises)
+        st.session_state.difficulty_level = st.session_state.pending_difficulty_level
         reset_progress(st.session_state.n_exercises)
         (
             st.session_state.exercise,
             st.session_state.correct,
             st.session_state.x1,
             st.session_state.x2,
-        ) = generate_exercise(st.session_state.selected_tables)
+        ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
         st.session_state.last_result = None
         st.session_state.prev_exercise = None
         st.session_state.prev_correct = None
@@ -292,3 +300,4 @@ if apply:
         st.rerun()
     else:
         st.warning("Kies minstens één tafel.")
+
