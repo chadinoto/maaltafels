@@ -139,7 +139,7 @@ with tab_oef:
 
     elif st.session_state.last_result == "wrong":
         st.error(
-            f"❌ Niet juist! Het juiste antwoord is: {st.session_state.prev_exercise} = {st.session_state.prev_correct}"
+            f"❌ {st.session_state.prev_exercise} = {st.session_state.user_answer} is niet juist! Het juiste antwoord is: {st.session_state.prev_exercise} = {st.session_state.prev_correct}"
         )
 
     if st.session_state.last_result is not None:
