@@ -156,7 +156,12 @@ with tab_stats:
     else:
         st.subheader("Tijd geoefend per dag")
         # display calendar table
-        df = create_calendar_table(df_scores[df_scores["NAME"] == st.session_state.user])
+        df = create_calendar_table(df_scores[df_scores["NAME"] == st.session_state.user],display="duration")
+        st.dataframe(df, width="stretch")
+        
+        st.subheader("Score per dag")
+        # display calendar table
+        df = create_calendar_table(df_scores[df_scores["NAME"] == st.session_state.user],display="score")
         st.dataframe(df, width="stretch")
 
         st.subheader("Prestaties per tafel")
