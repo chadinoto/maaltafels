@@ -142,7 +142,7 @@ def update_progress(exercise_counter, answer_type):
 #     df.to_csv(SCORE_FILE, index=False, sep=";")
 
 
-def read_score_df(user_id=None, limit=1000):
+def read_score_df(user="Raphael",user_id=None, limit=1000):
     """Read scores from Supabase (filtered by user_id if provided)."""
     try:
         query = sb.table("results").select("*").order("datetime_start", desc=True)
@@ -156,11 +156,13 @@ def read_score_df(user_id=None, limit=1000):
         df = pd.DataFrame(data)
         # make all column names uppercase
         df.columns = [col.upper() for col in df.columns]
+        df = df[df["NAME"] == user]
         return df
     except Exception as e:
         print(f"Error reading from Supabase: {e}")
         return pd.DataFrame()
 
+    
 
 def add_answer_row_to_db():
     """Add a single row to the results table in Supabase."""
@@ -178,6 +180,8 @@ def add_answer_row_to_db():
     eps = 1e-6
     model_score = score_flag / max(duration, eps)
 
+    tafels_in_oef = ",".join([str(tafel) for tafel in st.session_state.selected_tables])
+    
     row = {
         "name": st.session_state.user,
         "datetime_start": st.session_state.starttime.strftime("%Y-%m-%d %H:%M:%S"),
@@ -191,6 +195,8 @@ def add_answer_row_to_db():
         "duration_time": duration,  # max of 10 and duration
         "model_score": model_score,
         "probability": 0,  # temp; we recompute below for all rows
+        "tafels_in_oef": tafels_in_oef,
+        "difficulty_level": st.session_state.difficulty_level,
     }
 
     response = sb.table("results").insert(row).execute()
@@ -233,50 +239,6 @@ def save_score_df(df, user_id=None):
         print(f"Error writing to Supabase: {e}")
 
 
-def add_score_row():
-    """Append a new score row and save the file."""
-    df = read_score_df()  # <-- actually load it
-
-    score_flag = 1 if st.session_state.user_answer == st.session_state.correct else 0.1
-    duration = min(
-        10,
-        (
-            float(st.session_state.duration_time)
-            if st.session_state.duration_time
-            else 0.0
-        ),
-    )
-
-    # safe model score: higher when fast & correct
-    eps = 1e-6
-    model_score = score_flag / max(duration, eps)
-
-    row = {
-        "NAME": st.session_state.user,
-        "DATETIME_START": st.session_state.starttime.strftime(
-            "%Y-%m-%d %H:%M:%S"
-        ),  # string ok for CSV
-        "DATE_START": st.session_state.starttime.strftime("%Y-%m-%d"),
-        "TIME_START": st.session_state.starttime.strftime("%H:%M:%S"),
-        "EXERCISE_IDX": st.session_state.exercise_counter,
-        "TAFEL": st.session_state.x1,
-        "RAND_NUM": st.session_state.x2,
-        "USER_ANSWER": st.session_state.user_answer,
-        "SCORE": score_flag,
-        "DURATION_TIME": duration,  # max of 10 and duration
-        "MODEL_SCORE": model_score,
-        "PROBABILITY": 0,  # temp; we recompute below for all rows
-    }
-
-    df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-
-    # df = add_prob(df)
-    # Sort so weakest (lowest model_score) float to top if you like
-    df = df.sort_values(by="MODEL_SCORE", ascending=True, kind="stable")
-
-    save_score_df(df)
-    return df
-
 
 def add_prob(df):
     eps = 1e-6
@@ -296,7 +258,7 @@ def add_prob(df):
 
 
 def get_table_probs(table):
-    df = read_score_df()
+    df = read_score_df(user=st.session_state.user)
     eps = 1e-6
     # groupby TAFEL and RAND_NUM and take average of SCORE and DURATION
     table_stats = (
@@ -338,6 +300,7 @@ def get_table_probs(table):
 
 
 def restart():
+    st.session_state.pokemon = get_highest_level_pokemon()
     st.session_state.round_active = True
     st.session_state.round_count = 0
     st.session_state.score = 0
@@ -373,6 +336,7 @@ def init_session_state(generate_exercise, reset_progress):
         "duration_time_start": datetime.now(),
         "duration_time": 0.0,
         "status": 1,
+        "pokemon": ["Magikarp"]
     }
 
     for key, val in defaults.items():
@@ -610,3 +574,181 @@ def create_calendar_table(df, display):
     # Apply styling to the DataFrame
     df_calendar_styled = df_calendar.style.map(highlight_cells)
     return df_calendar_styled
+
+
+def generate_level_chart(df_scores, user=None):
+    # create a table with header and 20 rows. Each rows shows level from 1 to 20.
+    # it has these columns: Level, Wat moet je kunnen?, Pokemon
+    # Rank	Pokémon	Type(s)	Level
+    # 1	Mewtwo	Psychic	100
+    # 2	Rayquaza	Dragon / Flying	95
+    # 3	Garchomp	Dragon / Ground	90
+    # 4	Metagross	Steel / Psychic	88
+    # 5	Tyranitar	Rock / Dark	85
+    # 6	Dragonite	Dragon / Flying	83
+    # 7	Salamence	Dragon / Flying	80
+    # 8	Gyarados	Water / Flying	78
+    # 9	Lucario	Fighting / Steel	75
+    # 10	Arcanine	Fire	72
+    # 11	Alakazam	Psychic	70
+    # 12	Gengar	Ghost / Poison	68
+    # 13	Scizor	Bug / Steel	65
+    # 14	Greninja	Water / Dark	63
+    # 15	Charizard	Fire / Flying	60
+    # 16	Machamp	Fighting	58
+    # 17	Jolteon	Electric	55
+    # 18	Snorlax	Normal	52
+    # 19	Lapras	Water / Ice	50
+    # 20	Pikachu	Electric	45
+    
+    level_info = get_level_info()
+    
+    # transform to dataframe
+    df_level = pd.DataFrame.from_dict(
+        level_info,
+        orient="index",
+        columns=["idx","Level", "Wat moet je kunnen om deze Pokemon te krijgen?", "Pokémon"],
+    ).reset_index(drop=True)
+    
+    # add an image placeholder in the dataframe called 'Image'
+    df_level["Afbeelding"] = df_level["Pokémon"].apply(
+        lambda name: f"https://img.pokemondb.net/artwork/large/{name.lower()}.jpg"
+        
+    )
+    
+    # afbeelding leeg indien level = False
+    user_level_dict = calculate_level()
+    for idx, row in df_level.iterrows():
+        level_num = row["idx"]
+        if user_level_dict.get(level_num, False):
+            continue
+        else:
+            df_level.at[idx, "Afbeelding"] = ""
+    
+    df_level = df_level.drop(columns=["idx"])
+    
+    return df_level
+    
+    
+    
+    
+def calculate_level():
+    df = read_score_df(user=st.session_state.user)
+    level_0 = True
+    if df.empty:
+        level_1 = False; level_2 = False; level_3 = False; level_4 = False; level_5 = False; level_6 = False; level_7 = False; level_8 = False; level_9 = False; level_10 = False; level_11 = False; level_12 = False; level_13 = False; level_14 = False; level_15 = False; level_16 = False; level_17 = False; level_18 = False;  
+    else:
+        
+        df_tmp = (df 
+            .groupby(["DATETIME_START","DIFFICULTY_LEVEL","TAFELS_IN_OEF"], as_index=False)
+            .agg(N_EXERCISES=("EXERCISE_IDX", "count"), TOTAL_SCORE=("SCORE", "sum"), TOTAL_MINUTES=("DURATION_TIME", "sum"))
+            .query("N_EXERCISES>=20 and TOTAL_SCORE>=20 and DIFFICULTY_LEVEL!='Makkelijk' and TOTAL_MINUTES<=120")
+            )
+        
+        df_tmp["LEN_TAFELS_IN_OEF"] = df_tmp["TAFELS_IN_OEF"].apply(lambda x: len(x.split(",")))
+        
+        level_1 = len(df_tmp.query("TAFELS_IN_OEF=='2'")) > 0
+        level_2 = len(df_tmp.query("TAFELS_IN_OEF=='3'")) > 0
+        level_3 = len(df_tmp.query("TAFELS_IN_OEF=='4'")) > 0
+        level_4 = len(df_tmp.query("TAFELS_IN_OEF=='5'")) > 0
+        level_5 = len(df_tmp.query("TAFELS_IN_OEF=='6'")) > 0
+        level_6 = len(df_tmp.query("TAFELS_IN_OEF=='7'")) > 0
+        level_7 = len(df_tmp.query("TAFELS_IN_OEF=='8'")) > 0
+        level_8 = len(df_tmp.query("TAFELS_IN_OEF=='9'")) > 0
+        level_9 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=2")) > 0
+        level_10 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=3")) > 0
+        level_11 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=5")) > 0
+        level_12 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=7")) > 0
+        level_13 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=120")) > 0
+        level_14 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=108")) > 0
+        level_15 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90")) > 0
+        level_16 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=72")) > 0
+        level_17 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=60")) > 0
+        level_18 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
+
+    return {
+        0: level_0,
+        1: level_1,
+        2: level_2,
+        3: level_3,
+        4: level_4,
+        5: level_5,
+        6: level_6,
+        7: level_7,
+        8: level_8,
+        9: level_9,
+        10: level_10,
+        11: level_11,
+        12: level_12,
+        13: level_13,
+        14: level_14,
+        15: level_15,
+        16: level_16,
+        17: level_17,
+        18: level_18,
+    }
+    
+def get_highest_level_pokemon():
+    level_dict = calculate_level()
+    pokemon = ["Magikarp"]
+    level_info = get_level_info()
+
+    
+    for level, achieved in level_dict.items():
+        if achieved:
+            highest_level = level
+            
+    # get highest level where achieved is True
+    for level, achieved in level_dict.items():
+        if achieved:
+            highest_level = level
+            pokemon = level_info[level][3]
+    
+    return pokemon
+
+def get_all_pokemons():
+    level_dict = calculate_level()
+    pokemon = ["Magikarp"]
+    level_info = get_level_info()
+    
+    for level, achieved in level_dict.items():
+        if achieved:
+            pokemon.append(level_info[level][3])
+
+    return pokemon
+    
+
+def get_pokemon_hover_text(pokemon):
+    level_info = get_level_info()
+    # get row where pokemon matches
+    hover_text = ""
+    for level, info in level_info.items():
+        if info[3] == pokemon:
+            hover_text = f"Level {info[0]}: {info[2]} - Pokémon: {info[3]}"
+            break
+    return hover_text
+
+def get_level_info():
+    level_info = {
+        0: (0, 0, "Beginner: Geen oefeningen voltooid", "Magikarp"),
+        1: (1, 45, "Tafel van 2: 20 oefeningen correct in 2 minuten", "Pikachu"),
+        2: (2, 50, "Tafel van 3: 20 oefeningen correct in 2 minuten", "Lapras"),
+        3: (3, 52, "Tafel van 4: 20 oefeningen correct in 2 minuten", "Snorlax"),
+        4: (4, 55, "Tafel van 5: 20 oefeningen correct in 2 minuten", "Jolteon"),
+        5: (5, 58, "Tafel van 6: 20 oefeningen correct in 2 minuten", "Machamp"),
+        6: (6, 60, "Tafel van 7: 20 oefeningen correct in 2 minuten", "Charizard"),
+        7: (7, 63, "Tafel van 8: 20 oefeningen correct in 2 minuten", "Greninja"),
+        8: (8, 65, "Tafel van 9: 20 oefeningen correct in 2 minuten", "Scizor"),
+        9: (9, 68, "2 verschillende tafels: 20 oefeningen correct in 2 minuten", "Gengar"),
+        10: (10, 70, "3 verschillende tafels: 20 oefeningen correct in 2 minuten", "Alakazam"),
+        11: (11, 72, "5 verschillende tafels: 20 oefeningen correct in 2 minuten", "Arcanine"),
+        12: (12, 75, "7 verschillende tafels: 20 oefeningen correct in 2 minuten", "Lucario"),
+        13: (13, 78, "Alle tafels tot 9: 20 oefeningen correct in 2 minuten", "Gyarados"),
+        14: (14, 80, "Alle tafels tot 9: 20 oefeningen correct in 1.8 minuten", "Salamence"),
+        15: (15, 83, "Alle tafels tot 9: 20 oefeningen correct in 1.5 minuut", "Dragonite"),
+        16: (16, 85, "Alle tafels tot 9: 20 oefeningen correct in 1.2 minuut", "Tyranitar"),
+        17: (17, 88, "Alle tafels tot 9: 20 oefeningen correct in 1 minuut", "Metagross"),
+        18: (18, 720, "Alle tafels tot 9: 20 oefeningen correct in 45 seconden", "Arceus"),
+    }
+    
+    return level_info
