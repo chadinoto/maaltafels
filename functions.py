@@ -22,7 +22,7 @@ sb = create_client(url, key)
 # SCORE_FILE = os.path.join(DATA_PATH, "scores.csv")
 
 
-def generate_exercise(accepted_products, level="Moeilijk", exercise_idx=0):
+def generate_exercise(accepted_products, level, exercise_idx):
     random_accepted_product = accepted_products[
         random.randint(0, len(accepted_products) - 1)
     ]
@@ -505,7 +505,7 @@ def highlight_cells(val):
         return ""
 
 
-def create_calendar_table(df):
+def create_calendar_table(df, display):
     df["SCORE"] = df["SCORE"].apply(lambda d: 0 if d == 0.1 else d)
 
     df_per_day = (
@@ -535,34 +535,77 @@ def create_calendar_table(df):
             ],
             ignore_index=True,
         )
-
+        
     df_calendar = (
-        df_per_day.assign(DATE_START=pd.to_datetime(df_per_day["DATE_START"]))
-        .assign(WEEKDAY=lambda x: x["DATE_START"].dt.day_name())
-        .assign(
-            TEXT=lambda x: "Time: "
-            + x["MIN_PER_DAG"].apply(lambda y: str(int(np.ceil(y))))
-            + " min"
-            + ", score: "
-            + x["SCORE_PER_DAG"].fillna(0).apply(lambda y: str(int(y)))
-            + "%"
-        )
-        .assign(WEEK=lambda x: x["DATE_START"].dt.isocalendar().week)
-        .assign(
-            MONDAY_DATE=lambda x: x["DATE_START"]
-            - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
-        )
-        .assign(
-            WEEK_LABEL=lambda x: "Week "    
-            + x["WEEK"].astype(str)
-            + " ("
-            + x["MONDAY_DATE"].dt.strftime("%d/%m")
-            + ")"
-        )
-        .groupby(["WEEK_LABEL", "WEEKDAY"], as_index=False)
-        .agg(TEXT=("TEXT", "first"))
-        .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
+            df_per_day.assign(DATE_START=pd.to_datetime(df_per_day["DATE_START"]))
+            .assign(WEEKDAY=lambda x: x["DATE_START"].dt.day_name())
+            # translate weekday to dutch
+            .replace(
+                {
+                    "WEEKDAY": {
+                        "Monday": "Maandag",
+                        "Tuesday": "Dinsdag",
+                        "Wednesday": "Woensdag",
+                        "Thursday": "Donderdag",
+                        "Friday": "Vrijdag",
+                        "Saturday": "Zaterdag",
+                        "Sunday": "Zondag",
+                    }
+                }
+            )
+            # change to categorical with ordered categories
+            .assign(WEEKDAY=lambda x: pd.Categorical(x["WEEKDAY"], ordered=True, categories=["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"]))
     )
+
+    if display == "score":
+        df_calendar = (df_calendar      
+            .assign(
+                TEXT=lambda x: 
+                "score: "
+                + x["SCORE_PER_DAG"].fillna(0).apply(lambda y: str(int(y)))
+                + "%"
+            )
+            .assign(WEEK=lambda x: x["DATE_START"].dt.isocalendar().week)
+            .assign(
+                MONDAY_DATE=lambda x: x["DATE_START"]
+                - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
+            )
+            .assign(
+                WEEK_LABEL=lambda x: "Week "    
+                + x["WEEK"].astype(str)
+                + " ("
+                + x["MONDAY_DATE"].dt.strftime("%d/%m")
+                + ")"
+            )
+            .groupby(["WEEK_LABEL", "WEEKDAY"])
+            .agg(TEXT=("TEXT", "first"))
+            .reset_index()
+            .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
+        )
+    elif display == "duration":
+        df_calendar = (df_calendar      
+            .assign(
+                TEXT=lambda x: "Duurtijd: "
+                + x["MIN_PER_DAG"].apply(lambda y: str(int(np.ceil(y))))
+                + " min"
+            )
+            .assign(WEEK=lambda x: x["DATE_START"].dt.isocalendar().week)
+            .assign(
+                MONDAY_DATE=lambda x: x["DATE_START"]
+                - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
+            )
+            .assign(
+                WEEK_LABEL=lambda x: "Week "    
+                + x["WEEK"].astype(str)
+                + " ("
+                + x["MONDAY_DATE"].dt.strftime("%d/%m")
+                + ")"
+            )
+            .groupby(["WEEK_LABEL", "WEEKDAY"])
+            .agg(TEXT=("TEXT", "first"))
+            .reset_index()
+            .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
+        )
 
     # Apply styling to the DataFrame
     df_calendar_styled = df_calendar.style.map(highlight_cells)
