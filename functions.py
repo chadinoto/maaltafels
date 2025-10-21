@@ -494,7 +494,7 @@ def highlight_cells(val):
     # Extract the minutes value from the text
     try:
         # Extract minutes from text like "2024-01-15\n[Timer: 5 min, score: 80%]"
-        minutes = float(re.search(r"Time:\s*(\d+)\s*min", val).group(1))
+        minutes = float(re.search(r"Duurtijd:\s*(\d+)\s*min", val).group(1))
         if minutes >= 10:
             return "background-color: green; color: white; font-weight: bold;"
         elif minutes > 0:
