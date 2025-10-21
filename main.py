@@ -24,17 +24,43 @@ if st.session_state.reset_answer:
 
 
 # (2) LAYOUT MAIN BODY ----
-tabs = st.tabs(["Oefeningen", "Stats"])
-tab_oef, tab_stats = tabs
+# Header section above tabs
+
+st.write(f"Jouw verzamelde Pokémons: **{', '.join(st.session_state.pokemon)}**")
+# Display unique Pokemon in rows with multiple columns but keep order
+pokemon_list = []
+for pokemon in st.session_state.pokemon:
+    if pokemon not in pokemon_list:
+        pokemon_list.append(pokemon)
+
+if pokemon_list:
+    # Create rows of 6 Pokemon each
+    pokemon_per_row = 6
+    for i in range(0, len(pokemon_list), pokemon_per_row):
+        cols = st.columns(pokemon_per_row)
+        for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
+            with cols[j]:
+                st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
+    
+    st.markdown(
+        """
+        <style>
+        img {
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+tabs = st.tabs(["Oefeningen", "Level","Stats"])
+tab_oef, tab_level, tab_stats = tabs
 
 # (A) TAB - OEFENINGEN ----
 
 with tab_oef:
     # Oefeningen tab: the main exercises UI continues below
-
-    # st.title("Maaltafels")
     st.subheader(f"Hallo {st.session_state.user}, klaar voor de maaltafels?")
-
     # (2.1) Start button ----
     col1, col2 = st.columns([1, 5])
     with col1:
@@ -149,7 +175,7 @@ with tab_oef:
 
 with tab_stats:
     st.header(f"Statistieken voor {st.session_state.user}")
-    df_scores = read_score_df()
+    df_scores = read_score_df(st.session_state.user)
     df_scores = df_scores[df_scores["NAME"] == st.session_state.user]
     if df_scores.empty:
         st.info("Geen statistieken beschikbaar.")
@@ -246,13 +272,37 @@ with tab_stats:
             ),
             hide_index=True,
         )
+        
+# (3) TAB - LEVEL ----
+with tab_level:
+    st.header(f"Level van {st.session_state.user}")
+    df_scores = read_score_df(user=st.session_state.user)
+    df_scores = df_scores[df_scores["NAME"] == st.session_state.user]
+    if df_scores.empty:
+        st.info("Geen level beschikbaar.")
+    else:
+        st.data_editor(
+            generate_level_chart(df_scores, st.session_state.user),
+            column_config={
+                "Afbeelding": st.column_config.ImageColumn("Afbeelding", width="medium"),
+                "Level": "Level",
+                "Wat moet je kunnen om deze Pokémon te krijgen?": "Beschrijving",
+                "Pokémon": "Pokémon",
+            },
+            hide_index=True,
+            width="stretch",
+        )
+
 
 
 # (3) SIDEBAR ----
 st.sidebar.title("Instellingen")
+
+
 with st.sidebar.form("settings"):
     # Get current user index, defaulting to 0 (Raphael) if not found
     USERS = ["Raphael", "Mama", "Papa", "Lea"]
+
 
     st.selectbox(
         "Kies de gebruiker:",
@@ -302,7 +352,9 @@ if apply:
         st.session_state.prev_exercise = None
         st.session_state.prev_correct = None
         st.session_state.reset_answer = True
+        st.session_state.pokemon = get_all_pokemons()
         st.rerun()
+        
     else:
         st.warning("Kies minstens één tafel.")
 
