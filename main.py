@@ -151,6 +151,19 @@ with tab_oef:
             minutes = duration_exercises.seconds // 60
             seconds = duration_exercises.seconds % 60
             st.write(f"Totale tijd: {minutes} minuten en {seconds} seconden.")
+        
+        list_correct_answers, list_wrong_answers = get_difficult_exercises(st.session_state.user, st.session_state.starttime)
+        if len(list_wrong_answers) > 0:
+            st.markdown("#### Voortgang")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("Jouw foute antwoorden:")
+                for ex in list_wrong_answers:
+                    st.write(f"❌ {ex}")
+            with col2:
+                st.write("De juiste antwoorden waren:")
+                for ex in list_correct_answers:
+                    st.write(f"✅ {ex}")
 
     if st.session_state.exercise_counter > st.session_state.n_exercises:
         restart()

@@ -632,8 +632,6 @@ def generate_level_chart(df_scores, user=None):
     return df_level
     
     
-    
-    
 def calculate_level():
     df = read_score_df(user=st.session_state.user)
     level_0 = True
@@ -759,3 +757,17 @@ def get_level_info():
     }
     
     return level_info
+
+
+def get_difficult_exercises(user, starttime):
+    df = read_score_df(user=user)
+    df_filtered = df[(df["NAME"] == user) & (pd.to_datetime(df["DATETIME_START"]).dt.strftime("%Y-%m-%d %H:%M:%S") == pd.to_datetime(starttime).strftime("%Y-%m-%d %H:%M:%S"))]
+    
+    df_wrong_answers = df_filtered[df_filtered.SCORE<1]
+    df_wrong_answers = df_wrong_answers.assign(ANSWER=lambda x: (x["TAFEL"]*x["RAND_NUM"]).astype(str))
+    
+    list_correct_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + " x " + x["TAFEL"].astype(str) + " = " + x["ANSWER"].astype(str))["EXERCISE"].tolist()
+    
+    list_wrong_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + " x " + x["TAFEL"].astype(str) + " = " + x["USER_ANSWER"].astype(str))["EXERCISE"].tolist()
+
+    return list_correct_answers, list_wrong_answers
