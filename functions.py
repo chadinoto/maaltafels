@@ -300,7 +300,7 @@ def get_table_probs(table):
 
 
 def restart():
-    st.session_state.pokemon = get_highest_level_pokemon()
+    st.session_state.pokemon = get_all_pokemons()
     st.session_state.round_active = True
     st.session_state.round_count = 0
     st.session_state.score = 0
