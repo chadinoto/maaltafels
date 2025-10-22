@@ -142,10 +142,10 @@ def update_progress(exercise_counter, answer_type):
 #     df.to_csv(SCORE_FILE, index=False, sep=";")
 
 
-def read_score_df(user="Raphael",user_id=None, limit=1000):
+def read_score_df(user="Raphael",user_id=None, limit=100000):
     """Read scores from Supabase (filtered by user_id if provided)."""
     try:
-        query = sb.table("results").select("*").order("datetime_start", desc=True)
+        query = sb.table("results").select("*").eq("name", user).order("datetime_start", desc=True)
         if user_id:
             query = query.eq("user_id", user_id)
         res = query.limit(limit).execute()
