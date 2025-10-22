@@ -25,21 +25,17 @@ if st.session_state.reset_answer:
 
 # (2) LAYOUT MAIN BODY ----
 # Header section above tabs
-
 st.write(f"Jouw verzamelde Pokemons: **{', '.join(st.session_state.pokemon)}**")
 # Display unique Pokemon in rows with multiple columns but keep order
-pokemon_list = []
-for pokemon in st.session_state.pokemon:
-    if pokemon not in pokemon_list:
-        pokemon_list.append(pokemon)
-
+pokemon_list = st.session_state.pokemon
 if pokemon_list:
-    # Create rows of 6 Pokemon each
-    pokemon_per_row = 6
+    # Create rows of 10 Pokemon each
+    pokemon_per_row = 10
     for i in range(0, len(pokemon_list), pokemon_per_row):
         cols = st.columns(pokemon_per_row)
         for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
             with cols[j]:
+                st.caption(pokemon)
                 st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
     
     st.markdown(

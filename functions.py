@@ -336,7 +336,7 @@ def init_session_state(generate_exercise, reset_progress):
         "duration_time_start": datetime.now(),
         "duration_time": 0.0,
         "status": 1,
-        "pokemon": ["Magikarp"]
+        "pokemon": ["Magikarp"],
     }
 
     for key, val in defaults.items():
@@ -357,6 +357,8 @@ def init_session_state(generate_exercise, reset_progress):
         st.session_state.last_result = None
         st.session_state.prev_exercise = None
         st.session_state.prev_correct = None
+        
+    st.session_state.pokemon = get_all_pokemons()
 
 
 def generate_prob_table(df):
@@ -714,8 +716,13 @@ def get_all_pokemons():
     for level, achieved in level_dict.items():
         if achieved:
             pokemon.append(level_info[level][3])
+            
+    pokemon_list = []
+    for iter_pokemon in pokemon:
+        if iter_pokemon not in pokemon_list:
+            pokemon_list.append(iter_pokemon)
 
-    return pokemon
+    return pokemon_list
     
 
 def get_pokemon_hover_text(pokemon):
