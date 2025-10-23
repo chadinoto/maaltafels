@@ -620,7 +620,7 @@ def generate_level_chart(df_scores, user=None):
     df_level = pd.DataFrame.from_dict(
         level_info,
         orient="index",
-        columns=["idx","Level", "Wat moet je kunnen om deze Pokemon te krijgen?", "Pokémon"],
+        columns=["idx","Level", "Wat moet je kunnen om deze Pokemon te krijgen?", "Pokémon","Wat meer uitleg over jouw Pokemon 😊"],
     ).reset_index(drop=True)
     
     # add an image placeholder in the dataframe called 'Image'
@@ -628,6 +628,8 @@ def generate_level_chart(df_scores, user=None):
         lambda name: f"https://img.pokemondb.net/artwork/large/{name.lower()}.jpg"
         
     )
+    
+    df_level = df_level[["idx","Level", "Wat moet je kunnen om deze Pokemon te krijgen?", "Pokémon","Afbeelding","Wat meer uitleg over jouw Pokemon 😊"]]
     
     # afbeelding leeg indien level = False
     user_level_dict = calculate_level()
@@ -746,26 +748,27 @@ def get_pokemon_hover_text(pokemon):
 
 def get_level_info():
     level_info = {
-        0: (0, 0, "Beginner: Geen oefeningen voltooid", "Magikarp"),
-        1: (1, 45, "Tafel van 2: 20 oefeningen correct in 2 minuten", "Pikachu"),
-        2: (2, 50, "Tafel van 3: 20 oefeningen correct in 2 minuten", "Lapras"),
-        3: (3, 52, "Tafel van 4: 20 oefeningen correct in 2 minuten", "Snorlax"),
-        4: (4, 55, "Tafel van 5: 20 oefeningen correct in 2 minuten", "Jolteon"),
-        5: (5, 58, "Tafel van 6: 20 oefeningen correct in 2 minuten", "Machamp"),
-        6: (6, 60, "Tafel van 7: 20 oefeningen correct in 2 minuten", "Charizard"),
-        7: (7, 63, "Tafel van 8: 20 oefeningen correct in 2 minuten", "Greninja"),
-        8: (8, 65, "Tafel van 9: 20 oefeningen correct in 2 minuten", "Scizor"),
-        9: (9, 68, "2 verschillende tafels: 20 oefeningen correct in 2 minuten", "Gengar"),
-        10: (10, 70, "3 verschillende tafels: 20 oefeningen correct in 2 minuten", "Alakazam"),
-        11: (11, 72, "5 verschillende tafels: 20 oefeningen correct in 2 minuten", "Arcanine"),
-        12: (12, 75, "7 verschillende tafels: 20 oefeningen correct in 2 minuten", "Lucario"),
-        13: (13, 78, "Alle tafels tot 9: 20 oefeningen correct in 2 minuten", "Gyarados"),
-        14: (14, 80, "Alle tafels tot 9: 20 oefeningen correct in 1.8 minuten", "Salamence"),
-        15: (15, 83, "Alle tafels tot 9: 20 oefeningen correct in 1.5 minuut", "Dragonite"),
-        16: (16, 85, "Alle tafels tot 9: 20 oefeningen correct in 1.2 minuut", "Tyranitar"),
-        17: (17, 88, "Alle tafels tot 9: 20 oefeningen correct in 1 minuut", "Metagross"),
-        18: (18, 720, "Alle tafels tot 9: 20 oefeningen correct in 45 seconden", "Arceus"),
+        0: (0, 0, "Beginner: Geen oefeningen voltooid", "Magikarp", "Zwakke vis-Pokémon die bijna niets kan, maar evolueert in de machtige Gyarados."),
+        1: (1, 45, "Tafel van 2: 20 oefeningen correct in 2 minuten", "Pikachu", "Bekende mascotte van Pokémon; gebruikt elektrische aanvallen zoals Thunderbolt."),
+        2: (2, 50, "Tafel van 3: 20 oefeningen correct in 2 minuten", "Lapras", "Zachtaardige zeepokémon die mensen vaak over zee vervoert."),
+        3: (3, 52, "Tafel van 4: 20 oefeningen correct in 2 minuten", "Snorlax", "Grote, luie Pokémon die meestal slaapt maar enorm sterk is."),
+        4: (4, 55, "Tafel van 5: 20 oefeningen correct in 2 minuten", "Jolteon", "Snel en dodelijk elektrisch type met razendsnelle aanvallen."),
+        5: (5, 58, "Tafel van 6: 20 oefeningen correct in 2 minuten", "Machamp", "Vierarmige vechter met brute fysieke kracht en hoge aanval."),
+        6: (6, 60, "Tafel van 7: 20 oefeningen correct in 2 minuten", "Charizard", "Iconische vuurspuwende draak, populair in zowel games als anime."),
+        7: (7, 63, "Tafel van 8: 20 oefeningen correct in 2 minuten", "Greninja", "Ninja-kikker met hoge snelheid en slimme tactieken."),
+        8: (8, 65, "Tafel van 9: 20 oefeningen correct in 2 minuten", "Scizor", "Evolutie van Scyther; combineert kracht en verdediging met metalen klauwen."),
+        9: (9, 68, "2 verschillende tafels: 20 oefeningen correct in 2 minuten", "Gengar", "Ondeugende schaduw die vijanden bang maakt en energie steelt."),
+        10: (10, 70, "3 verschillende tafels: 20 oefeningen correct in 2 minuten", "Alakazam", "Extreem intelligente Pokémon met telekinetische krachten."),
+        11: (11, 72, "5 verschillende tafels: 20 oefeningen correct in 2 minuten", "Arcanine", "Edele, snelle Pokémon die bekendstaat als de Legendarische Hond."),
+        12: (12, 75, "7 verschillende tafels: 20 oefeningen correct in 2 minuten", "Lucario", "Aura-meester die energie van anderen kan voelen en manipuleren."),
+        13: (13, 78, "Alle tafels tot 9: 20 oefeningen correct in 2 minuten", "Gyarados", "Woeste zeedraak die uit Magikarp evolueert en vernietigend sterk is."),
+        14: (14, 80, "Alle tafels tot 9: 20 oefeningen correct in 1.8 minuten", "Salamence", "Machtige draak die zijn droom om te vliegen waarmaakt."),
+        15: (15, 83, "Alle tafels tot 9: 20 oefeningen correct in 1.5 minuut", "Dragonite", "Goedaardige draak die verrassend vriendelijk is ondanks zijn kracht."),
+        16: (16, 85, "Alle tafels tot 9: 20 oefeningen correct in 1.2 minuut", "Tyranitar", "Gigantische en agressieve Pokémon die bergen kan verplaatsen."),
+        17: (17, 88, "Alle tafels tot 9: 20 oefeningen correct in 1 minuut", "Metagross", "Superintelligente Pokémon met een computerachtig brein en enorme kracht."),
+        18: (18, 720, "Alle tafels tot 9: 20 oefeningen correct in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
+
     
     return level_info
 
