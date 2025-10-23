@@ -25,7 +25,7 @@ if st.session_state.reset_answer:
 
 # (2) LAYOUT MAIN BODY ----
 # Header section above tabs
-st.write(f"Jouw verzamelde Pokemons: **{', '.join(st.session_state.pokemon)}**")
+st.write(f"Jouw verzamelde Pokemons:")
 # Display unique Pokemon in rows with multiple columns but keep order
 pokemon_list = st.session_state.pokemon
 if pokemon_list:
