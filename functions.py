@@ -5,6 +5,7 @@ import numpy as np
 from datetime import datetime
 import os
 import re
+from aux_functions import *
 
 # from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -23,6 +24,7 @@ sb = create_client(url, key)
 
 
 def generate_exercise(accepted_products, level, exercise_idx):
+    print_title("New Exercise Generated")
     random_accepted_product = accepted_products[
         random.randint(0, len(accepted_products) - 1)
     ]
@@ -84,7 +86,6 @@ def render_progress():
 
 
 def update_progress(exercise_counter, answer_type):
-    print(f"Oefening nr: {exercise_counter}")
     # ignore if we're at the start or out of bounds
     if exercise_counter <= 0 or exercise_counter > len(st.session_state.progress):
         return
@@ -143,7 +144,16 @@ def update_progress(exercise_counter, answer_type):
 
 
 def read_score_df(user="Raphael",user_id=None, limit=100000):
+    print_white("Reading scores from session state...")
+    df = st.session_state.get("df_scores")
+    if df is not None:
+        return df
+    else:
+        return pd.DataFrame()
+
+def read_score_df_updated_db(user="Raphael", user_id=None, limit=100000):
     """Read scores from Supabase (filtered by user_id if provided)."""
+    print_red("Reading scores from Supabase...")
     try:
         query = sb.table("results").select("*").eq("name", user).order("datetime_start", desc=True)
         if user_id:
@@ -161,7 +171,6 @@ def read_score_df(user="Raphael",user_id=None, limit=100000):
     except Exception as e:
         print(f"Error reading from Supabase: {e}")
         return pd.DataFrame()
-
     
 
 def add_answer_row_to_db():
@@ -201,7 +210,7 @@ def add_answer_row_to_db():
 
     response = sb.table("results").insert(row).execute()
 
-    print(f"SUCCES - Toegevoegd aan DB: {response.data}")
+    print_green(f"✅ Toegevoegd aan DB: {response.data}")
 
 
 def save_score_df(df, user_id=None):
@@ -337,11 +346,14 @@ def init_session_state(generate_exercise, reset_progress):
         "duration_time": 0.0,
         "status": 1,
         "pokemon": ["Magikarp"],
+        "df_scores": pd.DataFrame(),
     }
 
     for key, val in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = val
+            if key == "df_scores":
+                st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
 
     # dependent inits
     if "progress" not in st.session_state:
@@ -543,7 +555,7 @@ def create_calendar_table(df, display):
                 + x["MONDAY_DATE"].dt.strftime("%d/%m")
                 + ")"
             )
-            .groupby(["WEEK_LABEL", "WEEKDAY"])
+            .groupby(["WEEK_LABEL", "WEEKDAY"], observed=True)
             .agg(TEXT=("TEXT", "first"))
             .reset_index()
             .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
@@ -567,7 +579,7 @@ def create_calendar_table(df, display):
                 + x["MONDAY_DATE"].dt.strftime("%d/%m")
                 + ")"
             )
-            .groupby(["WEEK_LABEL", "WEEKDAY"])
+            .groupby(["WEEK_LABEL", "WEEKDAY"], observed=True)
             .agg(TEXT=("TEXT", "first"))
             .reset_index()
             .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")

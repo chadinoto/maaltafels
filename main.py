@@ -139,6 +139,7 @@ with tab_oef:
 
     # (2.6) When finished ----
     if st.session_state.exercise_counter == st.session_state.n_exercises:
+        st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
         st.session_state.status = 0
         st.session_state.last_result = None
         st.success(
@@ -186,18 +187,17 @@ with tab_oef:
 with tab_stats:
     st.header(f"Statistieken voor {st.session_state.user}")
     df_scores = read_score_df(st.session_state.user)
-    df_scores = df_scores[df_scores["NAME"] == st.session_state.user]
     if df_scores.empty:
         st.info("Geen statistieken beschikbaar.")
     else:
         st.subheader("Tijd geoefend per dag")
         # display calendar table
-        df = create_calendar_table(df_scores[df_scores["NAME"] == st.session_state.user], "duration")
+        df = create_calendar_table(df_scores, "duration")
         st.dataframe(df, width="stretch")
         
         st.subheader("Score per dag")
         # display calendar table
-        df = create_calendar_table(df_scores[df_scores["NAME"] == st.session_state.user], "score")
+        df = create_calendar_table(df_scores, "score")
         st.dataframe(df, width="stretch")
 
         st.subheader("Prestaties per tafel")
@@ -271,6 +271,9 @@ with tab_stats:
                 df_scores.sort_values(by=["DATE_START", "TIME_START"], ascending=[False, False])
                 .drop(
                     columns=[
+                        "ID",
+                        "USER_ID",
+                        "CREATED_AT",
                         "DATETIME_START",
                         "EXERCISE_IDX",
                         "MODEL_SCORE",
@@ -287,7 +290,6 @@ with tab_stats:
 with tab_level:
     st.header(f"Level van {st.session_state.user}")
     df_scores = read_score_df(user=st.session_state.user)
-    df_scores = df_scores[df_scores["NAME"] == st.session_state.user]
     if df_scores.empty:
         st.info("Geen level beschikbaar.")
     else:
@@ -363,6 +365,7 @@ if apply:
         st.session_state.prev_correct = None
         st.session_state.reset_answer = True
         st.session_state.pokemon = get_all_pokemons()
+        st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
         st.rerun()
         
     else:
