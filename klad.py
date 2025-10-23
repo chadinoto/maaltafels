@@ -32,3 +32,4 @@ df
 
 # (2) DATABASE MANIPULATION ----
 
+# remove all lines where user is Mama and datetime is today in the supabase database
