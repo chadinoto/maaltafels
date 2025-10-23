@@ -152,7 +152,6 @@ def read_score_df(user="Raphael",user_id=None, limit=100000):
         return pd.DataFrame()
 
 def read_score_df_updated_db(user="Raphael", user_id=None, limit=100000):
-    """Read scores from Supabase (filtered by user_id if provided)."""
     print_red("Reading scores from Supabase...")
     try:
         query = sb.table("results").select("*").eq("name", user).order("datetime_start", desc=True)
