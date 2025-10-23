@@ -768,7 +768,6 @@ def get_level_info():
         17: (17, 88, "Alle tafels tot 9: 20 oefeningen correct in 1 minuut", "Metagross", "Superintelligente Pokémon met een computerachtig brein en enorme kracht."),
         18: (18, 720, "Alle tafels tot 9: 20 oefeningen correct in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
-
     
     return level_info
 
