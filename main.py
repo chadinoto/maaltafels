@@ -36,7 +36,7 @@ if pokemon_list:
         for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
             with cols[j]:
                 # small font caption
-                st.markdown(f"<small>{pokemon}</small>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
                 st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
     
     st.markdown(
