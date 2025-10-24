@@ -28,7 +28,8 @@ df = read_score_df("Raphael")
 
 df.groupby(["NAME","DATE_START","TIME_START","TAFELS_IN_OEF","DIFFICULTY_LEVEL"],set_index=False).agg("SCORE":"sum","COUNT":"count")
 df
-
+# get df number of rows
+len(df)
 
 # (2) DATABASE MANIPULATION ----
 
