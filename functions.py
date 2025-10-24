@@ -143,7 +143,7 @@ def update_progress(exercise_counter, answer_type):
 #     df.to_csv(SCORE_FILE, index=False, sep=";")
 
 
-def read_score_df(user="Raphael",user_id=None, limit=100000):
+def read_score_df(user="Raphael",user_id=None, limit=1000000):
     print_white("Reading scores from session state...")
     df = st.session_state.get("df_scores")
     if df is not None:
@@ -151,22 +151,43 @@ def read_score_df(user="Raphael",user_id=None, limit=100000):
     else:
         return pd.DataFrame()
 
-def read_score_df_updated_db(user="Raphael", user_id=None, limit=100000):
+def read_score_df_updated_db(user="Raphael", user_id=None, limit=1000000):
     print_red("Reading scores from Supabase...")
+
     try:
-        query = sb.table("results").select("*").eq("name", user).order("datetime_start", desc=True)
+        table = sb.table("results")
+        base_query = table.select("*").eq("name", user).order("datetime_start", desc=True)
         if user_id:
-            query = query.eq("user_id", user_id)
-        res = query.limit(limit).execute()
-        data = res.data or []
-        if not data:
+            base_query = base_query.eq("user_id", user_id)
+
+        all_data = []
+        batch_size = 1000
+        start = 0
+
+        while True:
+            end = start + batch_size - 1
+            res = base_query.range(start, end).execute()
+            rows = res.data or []
+            if not rows:
+                break
+            all_data.extend(rows)
+            if len(rows) < batch_size:
+                break  # No more data
+            start += batch_size
+
+        if not all_data:
             print("No data found in Supabase, returning empty DataFrame.")
             return pd.DataFrame()
-        df = pd.DataFrame(data)
-        # make all column names uppercase
+
+        df = pd.DataFrame(all_data)
         df.columns = [col.upper() for col in df.columns]
         df = df[df["NAME"] == user]
+
+        if limit:  # Optional manual limit
+            df = df.head(limit)
+
         return df
+
     except Exception as e:
         print(f"Error reading from Supabase: {e}")
         return pd.DataFrame()
@@ -784,3 +805,34 @@ def get_difficult_exercises(user, starttime):
     list_wrong_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + " x " + x["TAFEL"].astype(str) + " = " + x["USER_ANSWER"].astype(str))["EXERCISE"].tolist()
 
     return list_correct_answers, list_wrong_answers
+
+
+def plot_evolution_per_tafel(user, tafel):
+    # get df_scores from db and plot evoluation per day
+    df_scores = read_score_df_updated_db(user="Raphael")
+    # group by date and get metrics on mean score, total duration time and number of exercises done
+    df_daily = (
+        df_scores[df_scores["TAFEL"] == tafel]
+        .groupby("DATE_START", as_index=False)
+        .agg(
+            MEAN_SCORE=("SCORE", "mean"),
+            TOTAL_DURATION=("DURATION_TIME", "sum"),
+            N_EXERCISES=("EXERCISE_IDX", "count"),
+        )
+        .assign(DATE_START=pd.to_datetime(df_scores["DATE_START"]))
+        .sort_values("DATE_START")
+    )
+
+    # plot evolution
+    def plot_mean_score():
+        import plotly.express as px
+        fig = px.line(
+            df_daily,
+            x="DATE_START",
+            y="MEAN_SCORE",
+            title=f"Gemiddelde score per dag voor tafel {tafel}",
+            labels={"DATE_START": "Datum", "MEAN_SCORE": "Gemiddelde Score"},
+        )
+    
+    # show plot
+        st.plotly_chart(fig)
