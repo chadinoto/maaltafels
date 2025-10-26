@@ -296,13 +296,13 @@ with tab_level:
         st.data_editor(
             generate_level_chart(df_scores, st.session_state.user),
             column_config={
-                "Afbeelding": st.column_config.ImageColumn("Afbeelding", width="medium"),
-                "Level": "Level",
-                "Wat moet je kunnen om deze Pokémon te krijgen?": "Beschrijving",
-                "Pokémon": "Pokémon",
+            "Afbeelding": st.column_config.ImageColumn("Afbeelding"),
+            "Level": "Level",
+            "Wat moet je kunnen om deze Pokémon te krijgen?": st.column_config.TextColumn("Beschrijving", width="large"),
+            "Pokémon": "Pokémon",
             },
             hide_index=True,
-            width="stretch",
+            width="content",
         )
 
 
@@ -325,6 +325,7 @@ with st.sidebar.form("settings"):
     st.selectbox(
         "Kies niveau van moeilijkheid:",
         options=["Makkelijk", "Middelmatig","Moeilijk"],
+        index = 1,
         key = "pending_difficulty_level",
     )
     
