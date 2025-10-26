@@ -24,7 +24,8 @@ sb = create_client(url, key)
 
 
 def generate_exercise(accepted_products, level, exercise_idx):
-    print_title("New Exercise Generated")
+    print_title("NEW EXERCISE")
+    print_function("New Exercise Generated")
     random_accepted_product = accepted_products[
         random.randint(0, len(accepted_products) - 1)
     ]
@@ -86,6 +87,7 @@ def render_progress():
 
 
 def update_progress(exercise_counter, answer_type):
+    print_function(f"update_progress(exercise_counter={exercise_counter}, answer_type={answer_type})")
     # ignore if we're at the start or out of bounds
     if exercise_counter <= 0 or exercise_counter > len(st.session_state.progress):
         return
@@ -152,7 +154,7 @@ def read_score_df(user="Raphael",user_id=None, limit=1000000):
         return pd.DataFrame()
 
 def read_score_df_updated_db(user="Raphael", user_id=None, limit=1000000):
-    print_red("Reading scores from Supabase...")
+    print_orange("Reading scores from Supabase...")
 
     try:
         table = sb.table("results")
@@ -194,6 +196,7 @@ def read_score_df_updated_db(user="Raphael", user_id=None, limit=1000000):
     
 
 def add_answer_row_to_db():
+    print_function("add_answer_row_to_db()")
     """Add a single row to the results table in Supabase."""
     score_flag = 1 if st.session_state.user_answer == st.session_state.correct else 0.1
     duration = min(
@@ -234,6 +237,7 @@ def add_answer_row_to_db():
 
 
 def save_score_df(df, user_id=None):
+    print_function("save_score_df()")
     """Write new score rows to Supabase."""
     try:
         # make all column names lowercase
@@ -287,6 +291,7 @@ def add_prob(df):
 
 
 def get_table_probs(table):
+    print_function("get_table_probs()")
     df = read_score_df(user=st.session_state.user)
     eps = 1e-6
     # groupby TAFEL and RAND_NUM and take average of SCORE and DURATION
@@ -329,6 +334,7 @@ def get_table_probs(table):
 
 
 def restart():
+    print_function("restart()")
     st.session_state.pokemon = get_all_pokemons()
     st.session_state.round_active = True
     st.session_state.round_count = 0
@@ -349,6 +355,7 @@ def restart():
 
 
 def init_session_state(generate_exercise, reset_progress):
+    print_function("init_session_state()")
     defaults = {
         "user": "Raphael",
         "difficulty_level": "Middelmatig",
@@ -394,6 +401,7 @@ def init_session_state(generate_exercise, reset_progress):
 
 
 def generate_prob_table(df):
+    print_function("generate_prob_table()")
     # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
     # First aggregate to handle duplicate TAFEL/RAND_NUM combinations
     df = add_prob(df)
@@ -422,6 +430,7 @@ def generate_prob_table(df):
 
 
 def generate_duration_table(df):
+    print_function("generate_duration_table()")
     # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
     # First aggregate to handle duplicate TAFEL/RAND_NUM combinations
     df = add_prob(df)
@@ -449,6 +458,7 @@ def generate_duration_table(df):
 
 
 def generate_score_table(df):
+    print_function("generate_score_table()")
     # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
     # First aggregate to handle duplicate TAFEL/RAND_NUM combinations
     df = add_prob(df)
@@ -504,6 +514,7 @@ def highlight_cells(val):
 
 
 def create_calendar_table(df, display):
+    print_function("create_calendar_table()")
     df["SCORE"] = df["SCORE"].apply(lambda d: 0 if d == 0.1 else d)
 
     df_per_day = (
@@ -616,6 +627,7 @@ def create_calendar_table(df, display):
 
 
 def generate_level_chart(df_scores, user=None):
+    print_function("generate_level_chart()")
     # create a table with header and 20 rows. Each rows shows level from 1 to 20.
     # it has these columns: Level, Wat moet je kunnen?, Pokemon
     # Rank	Pokémon	Type(s)	Level
@@ -672,6 +684,7 @@ def generate_level_chart(df_scores, user=None):
     
     
 def calculate_level():
+    print_function("calculate_level()")    
     df = read_score_df(user=st.session_state.user)
     level_0 = True
     if df.empty:
@@ -727,7 +740,8 @@ def calculate_level():
         18: level_18,
     }
     
-def get_highest_level_pokemon():
+def get_highest_level_pokemon_remove():
+    
     level_dict = calculate_level()
     pokemon = ["Magikarp"]
     level_info = get_level_info()
@@ -746,6 +760,8 @@ def get_highest_level_pokemon():
     return pokemon
 
 def get_all_pokemons():
+    print_function("get_all_pokemons()")
+
     level_dict = calculate_level()
     pokemon = ["Magikarp"]
     level_info = get_level_info()
@@ -773,6 +789,8 @@ def get_pokemon_hover_text(pokemon):
     return hover_text
 
 def get_level_info():
+    print_function("get_level_info()")
+
     level_info = {
         0: (0, 0, "Beginner: Geen oefeningen voltooid", "Magikarp", "Zwakke vis-Pokémon die bijna niets kan, maar evolueert in de machtige Gyarados."),
         1: (1, 45, "Tafel van 2: 20 oefeningen juist in 2 minuten", "Pikachu", "Bekende mascotte van Pokémon; gebruikt elektrische aanvallen zoals Thunderbolt."),
@@ -799,6 +817,7 @@ def get_level_info():
 
 
 def get_difficult_exercises(user, starttime):
+    print_function(f"get_difficult_exercises(user={user}, starttime={starttime})")
     df = read_score_df(user=user)
     df_filtered = df[(df["NAME"] == user) & (pd.to_datetime(df["DATETIME_START"]).dt.strftime("%Y-%m-%d %H:%M:%S") == pd.to_datetime(starttime).strftime("%Y-%m-%d %H:%M:%S"))]
     
@@ -813,6 +832,7 @@ def get_difficult_exercises(user, starttime):
 
 
 def plot_evolution_per_tafel(user, tafel):
+    print_function(f"plot_evolution_per_tafel(user={user}, tafel={tafel})")
     # get df_scores from db and plot evoluation per day
     df_scores = read_score_df_updated_db(user="Raphael")
     # group by date and get metrics on mean score, total duration time and number of exercises done
@@ -843,9 +863,8 @@ def plot_evolution_per_tafel(user, tafel):
         st.plotly_chart(fig)
 
 
-def score_per_set():
-    df_scores = read_score_df_updated_db(user=st.session_state.user)
-    
+def score_per_set(df_scores):
+    print_function("score_per_set(df_scores)")
     df_scores["SCORE"] = df_scores["SCORE"].apply(lambda d: 0 if d<1 else d)
     df_out = (df_scores
      .groupby(["DATE_START","TIME_START","TAFELS_IN_OEF","DIFFICULTY_LEVEL"])
@@ -864,6 +883,8 @@ def translate_sec_to_min_sec(seconds):
 
 
 def settings_changed():
+    print_function("settings_changed()")
+
     if st.session_state.pending_selected_tables:
         st.session_state.selected_tables = st.session_state.pending_selected_tables
         st.session_state.user = st.session_state.pending_user
@@ -887,5 +908,53 @@ def settings_changed():
     else:
         st.warning("Kies minstens één tafel.")
         
-        
+def reset_exercises():
+    print_title("Settings changed")
+    print_function("Reset_exercises()")
+    # DO NOT mutate any pending_* keys here.
+    pending_tables = st.session_state.get("pending_selected_tables", [])
+    if not pending_tables:
+        st.warning("Kies minstens één tafel.")
+        return
+
+    new_user  = st.session_state.get("pending_user", st.session_state.user)
+    new_level = st.session_state.get("pending_difficulty_level", st.session_state.difficulty_level)
+    new_tables = list(pending_tables)
+    new_n = int(st.session_state.get("pending_n_exercises", st.session_state.n_exercises))
+    new_n = max(1, min(50, new_n))
+
+    # Skip heavy work when nothing changed
+    if (
+        new_user  == st.session_state.user
+        and new_level == st.session_state.difficulty_level
+        and new_tables == st.session_state.selected_tables
+        and new_n == st.session_state.n_exercises
+    ):
+        return
+
+    # Commit the new settings (these keys are NOT widget-owned)
+    st.session_state.user = new_user
+    st.session_state.difficulty_level = new_level
+    st.session_state.selected_tables = new_tables
+    st.session_state.n_exercises = new_n
+
+    # ---- your side effects (unchanged from your function) ----
+    reset_progress(st.session_state.n_exercises)
+    (
+        st.session_state.exercise,
+        st.session_state.correct,
+        st.session_state.x1,
+        st.session_state.x2,
+    ) = generate_exercise(
+        st.session_state.selected_tables,
+        st.session_state.difficulty_level,
+        0,
+    )
+    st.session_state.last_result = None
+    st.session_state.prev_exercise = None
+    st.session_state.prev_correct = None
+    st.session_state.reset_answer = True
+    st.session_state.pokemon = get_all_pokemons()
+    st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
+    # No st.rerun(): Streamlit reruns automatically after on_change.
 

@@ -139,6 +139,7 @@ with tab_oef:
 
     # (2.6) When finished ----
     if st.session_state.exercise_counter == st.session_state.n_exercises:
+        print_info("Set done!")
         st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
         st.session_state.status = 0
         st.session_state.last_result = None
@@ -230,7 +231,7 @@ with tab_stats:
         )
         
         st.subheader("Set pogingen")
-        df_table = score_per_set()
+        df_table = score_per_set(df_scores)
         st.dataframe(
             df_table,
             hide_index=True,
@@ -317,66 +318,52 @@ with tab_level:
 
 
 # (3) SIDEBAR ----
+# ---------- pending values (owned by widgets) ----------
+st.session_state.setdefault("pending_user", st.session_state.user)
+st.session_state.setdefault("pending_difficulty_level", st.session_state.difficulty_level)
+st.session_state.setdefault("pending_selected_tables", st.session_state.selected_tables)
+st.session_state.setdefault("pending_n_exercises", st.session_state.n_exercises)
+
+USERS  = ["Raphael", "Mama", "Papa", "Lea"]
+DIFFS  = ["Makkelijk", "Middelmatig", "Moeilijk"]
+TABLES = [2, 3, 4, 5, 6, 7, 8, 9]
+
+
+
 st.sidebar.title("Instellingen")
 
+# --------- NO FORM. Each widget triggers reset_exercises on change ----------
+st.sidebar.selectbox(
+    "Kies de gebruiker:",
+    options=USERS,
+    index=USERS.index(st.session_state.pending_user) if st.session_state.pending_user in USERS else 0,
+    key="pending_user",
+    on_change=reset_exercises,
+)
 
-with st.sidebar.form("settings"):
-    # Get current user index, defaulting to 0 (Raphael) if not found
-    USERS = ["Raphael", "Mama", "Papa", "Lea"]
+st.sidebar.selectbox(
+    "Kies niveau van moeilijkheid:",
+    options=DIFFS,
+    index=DIFFS.index(st.session_state.pending_difficulty_level) if st.session_state.pending_difficulty_level in DIFFS else 1,
+    key="pending_difficulty_level",
+    on_change=reset_exercises,
+)
 
-    user_changed = st.selectbox(
-        "Kies de gebruiker:",
-        options=USERS,
-        key="pending_user",  # keeps value across reruns
-    )
-    
-    difficulty_changed = st.selectbox(
-        "Kies niveau van moeilijkheid:",
-        options=["Makkelijk", "Middelmatig","Moeilijk"],
-        index = 1,
-        key = "pending_difficulty_level",
-    )
-    
-    tables_changed = st.multiselect(
-        "Kies de tafel(s) die je wil oefenen:",
-        options=[2, 3, 4, 5, 6, 7, 8, 9],
-        default=st.session_state.selected_tables,
-        key="pending_selected_tables",
-    )
-    # use a separate widget key + show current value as the default
-    n_exercises_changed = st.number_input(
-        "Aantal oefeningen per ronde:",
-        min_value=1,
-        max_value=50,
-        value=st.session_state.n_exercises,  # reflect current choice
-        step=1,
-        key="pending_n_exercises",
-    )
-    apply = st.form_submit_button("OK")
+st.sidebar.multiselect(
+    "Kies de tafel(s) die je wil oefenen:",
+    options=TABLES,
+    default=st.session_state.pending_selected_tables,
+    key="pending_selected_tables",
+    on_change=reset_exercises,
+)
 
-
-
-if apply:
-    if st.session_state.pending_selected_tables:
-        st.session_state.selected_tables = st.session_state.pending_selected_tables
-        st.session_state.user = st.session_state.pending_user
-        st.session_state.n_exercises = int(st.session_state.pending_n_exercises)
-        st.session_state.difficulty_level = st.session_state.pending_difficulty_level
-        reset_progress(st.session_state.n_exercises)
-        (
-            st.session_state.exercise,
-            st.session_state.correct,
-            st.session_state.x1,
-            st.session_state.x2,
-        ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
-        st.session_state.last_result = None
-        st.session_state.prev_exercise = None
-        st.session_state.prev_correct = None
-        st.session_state.reset_answer = True
-        st.session_state.pokemon = get_all_pokemons()
-        st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
-        st.rerun()
-        
-    else:
-        st.warning("Kies minstens één tafel.")
+st.sidebar.number_input(
+    "Aantal oefeningen per ronde:",
+    min_value=1,
+    max_value=50,
+    value=st.session_state.pending_n_exercises,
+    step=1,
+    key="pending_n_exercises",
+    on_change=reset_exercises,
+)
 

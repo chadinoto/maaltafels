@@ -48,5 +48,12 @@ def print_title(text, timestamp=False):
     if timestamp:
         now = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         text = f"[{now}] {text.upper()}"
-    print(f"{color_code}{text.upper()} \033[0m")
+    print(f"{color_code}{text.upper()}--------------------------------------------------------- \033[0m")
+    
+def print_function(text, timestamp=True):
+    color_code = "\033[1m\033[94m"
+    if timestamp:
+        now = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        text = f"[{now}] {text}"
+    print(f"{color_code}{text} \033[0m")
 
