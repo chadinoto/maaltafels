@@ -882,31 +882,6 @@ def translate_sec_to_min_sec(seconds):
     return f"{int(minutes)} min {int(sec)} sec"
 
 
-def settings_changed():
-    print_function("settings_changed()")
-
-    if st.session_state.pending_selected_tables:
-        st.session_state.selected_tables = st.session_state.pending_selected_tables
-        st.session_state.user = st.session_state.pending_user
-        st.session_state.n_exercises = int(st.session_state.pending_n_exercises)
-        st.session_state.difficulty_level = st.session_state.pending_difficulty_level
-        reset_progress(st.session_state.n_exercises)
-        (
-            st.session_state.exercise,
-            st.session_state.correct,
-            st.session_state.x1,
-            st.session_state.x2,
-        ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
-        st.session_state.last_result = None
-        st.session_state.prev_exercise = None
-        st.session_state.prev_correct = None
-        st.session_state.reset_answer = True
-        st.session_state.pokemon = get_all_pokemons()
-        st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
-        st.rerun()
-        
-    else:
-        st.warning("Kies minstens één tafel.")
         
 def reset_exercises():
     print_title("Settings changed")
