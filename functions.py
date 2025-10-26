@@ -911,7 +911,6 @@ def settings_changed():
 def reset_exercises():
     print_title("Settings changed")
     print_function("Reset_exercises()")
-    # DO NOT mutate any pending_* keys here.
     pending_tables = st.session_state.get("pending_selected_tables", [])
     if not pending_tables:
         st.warning("Kies minstens één tafel.")
