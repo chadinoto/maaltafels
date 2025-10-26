@@ -319,10 +319,15 @@ with tab_level:
 
 # (3) SIDEBAR ----
 # ---------- pending values (owned by widgets) ----------
-st.session_state.setdefault("pending_user", st.session_state.user)
-st.session_state.setdefault("pending_difficulty_level", st.session_state.difficulty_level)
-st.session_state.setdefault("pending_selected_tables", st.session_state.selected_tables)
-st.session_state.setdefault("pending_n_exercises", st.session_state.n_exercises)
+# Initialize pending values only if they don't exist
+if "pending_user" not in st.session_state:
+    st.session_state.pending_user = st.session_state.user
+if "pending_difficulty_level" not in st.session_state:
+    st.session_state.pending_difficulty_level = st.session_state.difficulty_level
+if "pending_selected_tables" not in st.session_state:
+    st.session_state.pending_selected_tables = st.session_state.selected_tables
+if "pending_n_exercises" not in st.session_state:
+    st.session_state.pending_n_exercises = st.session_state.n_exercises
 
 USERS  = ["Raphael", "Mama", "Papa", "Lea"]
 DIFFS  = ["Makkelijk", "Middelmatig", "Moeilijk"]
