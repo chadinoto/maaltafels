@@ -605,6 +605,11 @@ def create_calendar_table(df, display):
             .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
         )
 
+    # Reorder columns to maintain proper weekday order
+    weekday_order = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"]
+    existing_weekdays = [day for day in weekday_order if day in df_calendar.columns]
+    df_calendar = df_calendar[existing_weekdays]
+
     # Apply styling to the DataFrame
     df_calendar_styled = df_calendar.style.map(highlight_cells)
     return df_calendar_styled
@@ -836,3 +841,51 @@ def plot_evolution_per_tafel(user, tafel):
     
     # show plot
         st.plotly_chart(fig)
+
+
+def score_per_set():
+    df_scores = read_score_df_updated_db(user=st.session_state.user)
+    
+    df_scores["SCORE"] = df_scores["SCORE"].apply(lambda d: 0 if d<1 else d)
+    df_out = (df_scores
+     .groupby(["DATE_START","TIME_START","TAFELS_IN_OEF","DIFFICULTY_LEVEL"])
+     .agg(AANTAL_OEFENINGEN=("EXERCISE_IDX","count"), SCORE=("SCORE","sum"), TIJD=("DURATION_TIME","sum"))
+     .assign(TIJD=lambda x: x["TIJD"].apply(lambda d: translate_sec_to_min_sec(d)))
+     .sort_values(by=["DATE_START","TIME_START"], ascending=[False,False])
+     .reset_index()
+    )
+
+    return df_out
+
+def translate_sec_to_min_sec(seconds):
+    minutes = seconds // 60
+    sec = seconds % 60
+    return f"{int(minutes)} min {int(sec)} sec"
+
+
+def settings_changed():
+    if st.session_state.pending_selected_tables:
+        st.session_state.selected_tables = st.session_state.pending_selected_tables
+        st.session_state.user = st.session_state.pending_user
+        st.session_state.n_exercises = int(st.session_state.pending_n_exercises)
+        st.session_state.difficulty_level = st.session_state.pending_difficulty_level
+        reset_progress(st.session_state.n_exercises)
+        (
+            st.session_state.exercise,
+            st.session_state.correct,
+            st.session_state.x1,
+            st.session_state.x2,
+        ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
+        st.session_state.last_result = None
+        st.session_state.prev_exercise = None
+        st.session_state.prev_correct = None
+        st.session_state.reset_answer = True
+        st.session_state.pokemon = get_all_pokemons()
+        st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
+        st.rerun()
+        
+    else:
+        st.warning("Kies minstens één tafel.")
+        
+        
+

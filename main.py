@@ -228,6 +228,15 @@ with tab_stats:
                 "Aantal pogingen": st.column_config.TextColumn(width="medium"),
             },
         )
+        
+        st.subheader("Set pogingen")
+        df_table = score_per_set()
+        st.dataframe(
+            df_table,
+            hide_index=True,
+            width="stretch",
+        )
+        
 
         st.subheader("Kans dat een bepaalde tafel wordt gekozen")
         prob_table = generate_prob_table(df_scores)
@@ -315,29 +324,27 @@ with st.sidebar.form("settings"):
     # Get current user index, defaulting to 0 (Raphael) if not found
     USERS = ["Raphael", "Mama", "Papa", "Lea"]
 
-
-    st.selectbox(
+    user_changed = st.selectbox(
         "Kies de gebruiker:",
         options=USERS,
         key="pending_user",  # keeps value across reruns
     )
     
-    st.selectbox(
+    difficulty_changed = st.selectbox(
         "Kies niveau van moeilijkheid:",
         options=["Makkelijk", "Middelmatig","Moeilijk"],
         index = 1,
         key = "pending_difficulty_level",
     )
     
-
-    st.multiselect(
+    tables_changed = st.multiselect(
         "Kies de tafel(s) die je wil oefenen:",
         options=[2, 3, 4, 5, 6, 7, 8, 9],
         default=st.session_state.selected_tables,
         key="pending_selected_tables",
     )
     # use a separate widget key + show current value as the default
-    pending_n = st.number_input(
+    n_exercises_changed = st.number_input(
         "Aantal oefeningen per ronde:",
         min_value=1,
         max_value=50,
@@ -346,6 +353,7 @@ with st.sidebar.form("settings"):
         key="pending_n_exercises",
     )
     apply = st.form_submit_button("OK")
+
 
 
 if apply:
