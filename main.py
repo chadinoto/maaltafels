@@ -139,7 +139,7 @@ with tab_oef:
 
     # (2.6) When finished ----
     if st.session_state.exercise_counter == st.session_state.n_exercises:
-        print_info("Set done!")
+        print_white("Set done!")
         st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
         st.session_state.status = 0
         st.session_state.last_result = None
