@@ -316,7 +316,6 @@ with tab_level:
         )
 
 
-
 # (3) SIDEBAR ----
 # ---------- pending values (owned by widgets) ----------
 # Initialize pending values only if they don't exist
@@ -333,15 +332,12 @@ USERS  = ["Raphael", "Mama", "Papa", "Lea"]
 DIFFS  = ["Makkelijk", "Middelmatig", "Moeilijk"]
 TABLES = [2, 3, 4, 5, 6, 7, 8, 9]
 
-
-
 st.sidebar.title("Instellingen")
 
 # --------- NO FORM. Each widget triggers reset_exercises on change ----------
 st.sidebar.selectbox(
     "Kies de gebruiker:",
     options=USERS,
-    index=USERS.index(st.session_state.pending_user) if st.session_state.pending_user in USERS else 0,
     key="pending_user",
     on_change=reset_exercises,
 )
@@ -349,7 +345,6 @@ st.sidebar.selectbox(
 st.sidebar.selectbox(
     "Kies niveau van moeilijkheid:",
     options=DIFFS,
-    index=DIFFS.index(st.session_state.pending_difficulty_level) if st.session_state.pending_difficulty_level in DIFFS else 1,
     key="pending_difficulty_level",
     on_change=reset_exercises,
 )
@@ -357,7 +352,6 @@ st.sidebar.selectbox(
 st.sidebar.multiselect(
     "Kies de tafel(s) die je wil oefenen:",
     options=TABLES,
-    default=st.session_state.pending_selected_tables,
     key="pending_selected_tables",
     on_change=reset_exercises,
 )
@@ -366,7 +360,6 @@ st.sidebar.number_input(
     "Aantal oefeningen per ronde:",
     min_value=1,
     max_value=50,
-    value=st.session_state.pending_n_exercises,
     step=1,
     key="pending_n_exercises",
     on_change=reset_exercises,
