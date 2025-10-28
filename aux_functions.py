@@ -1,10 +1,5 @@
 import datetime as dt
 
-def View(df):
-    from datawrangler import open_in_data_wrangler
-    open_in_data_wrangler(df)
-
-
 # (1) Loggers
 
 def print_red(text, timestamp=True):
@@ -56,4 +51,5 @@ def print_function(text, timestamp=True):
         now = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         text = f"[{now}] {text}"
     print(f"{color_code}{text} \033[0m") 
+
 

@@ -9,7 +9,6 @@ from time import time
 DATA_PATH = "data"
 SCORE_FILE = os.path.join(DATA_PATH, "scores.csv")
 
-
 # (1) INITIALIZE DEFAULTS ----
 
 init_session_state(generate_exercise, reset_progress)
@@ -24,6 +23,7 @@ if st.session_state.reset_answer:
 
 
 # (2) LAYOUT MAIN BODY ----
+
 # Header section above tabs
 st.write(f"Jouw verzamelde Pokemons:")
 # Display unique Pokemon in rows with multiple columns but keep order
@@ -167,8 +167,12 @@ with tab_oef:
                 st.write("De juiste antwoorden waren:")
                 for ex in list_correct_answers:
                     st.write(f"✅ {ex}")
+        reset_exercises()
+        restart()
 
     if st.session_state.exercise_counter > st.session_state.n_exercises:
+        print_red("DOES THIS EVER HAPPEN?")
+        reset_exercises()
         restart()
 
     # (2.7) Controle check text: succes / wrong
@@ -316,7 +320,8 @@ with tab_level:
         )
 
 
-# (3) SIDEBAR ----
+# (4) SIDEBAR ----
+
 # ---------- pending values (owned by widgets) ----------
 # Initialize pending values only if they don't exist
 if "pending_user" not in st.session_state:

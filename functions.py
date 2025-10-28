@@ -1,13 +1,12 @@
+# (0) IMPORTS
+
 import random
 import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import os
 import re
 from aux_functions import *
-
-# from dotenv import load_dotenv
 from supabase import create_client, Client
 
 # load_dotenv()
@@ -19,131 +18,9 @@ url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_ANON_KEY"]
 sb = create_client(url, key)
 
-# DATA_PATH = "data"
-# SCORE_FILE = os.path.join(DATA_PATH, "scores.csv")
 
 
-def generate_exercise(accepted_products, level, exercise_idx):
-    print_title("NEW EXERCISE")
-    print_function("New Exercise Generated")
-    random_accepted_product = accepted_products[
-        random.randint(0, len(accepted_products) - 1)
-    ]
-    if level == "Moeilijk":
-        table_probs = get_table_probs(random_accepted_product)
-
-        # choose a rand index from df table_probs based on probability in PROBABILITY col
-        random_number = int(
-            random.choices(
-                table_probs["RAND_NUM"].tolist(),
-                weights=table_probs["PROBABILITY"].tolist(),
-                k=1,
-            )[0]
-        )
-        
-    elif level == "Middelmatig":
-        random_number = random.randint(1, 10)
-    
-    else:
-
-        if (exercise_idx + 1) <= 10:
-            random_number = exercise_idx + 1
-        else: 
-            random_number = (exercise_idx+1) % 10
-        
-        if random_number == 0:
-            random_number = 10
-        
-
-    correct_answer = random_number * random_accepted_product
-
-    exercise_string = f"{random_number} x {random_accepted_product}"
-
-    return exercise_string, correct_answer, random_accepted_product, random_number
-
-
-def check_answer(correct_answer, user_answer):
-    correct_answer = int(correct_answer)
-    user_answer = int(user_answer)
-
-    return correct_answer == user_answer
-
-
-def reset_progress(n_exercises):
-    # display n_exercises white circle emojis
-    st.session_state.duration_time_start = datetime.now()
-    st.session_state.starttime = datetime.now()
-    st.session_state.progress = ["⚪"] * n_exercises
-
-
-def render_progress():
-    """Display the circles as emoji."""
-    circles = st.session_state.get("progress", [])
-    if not circles:
-        return
-    row1 = " ".join(circles)
-    st.markdown("#### Voortgang")
-    st.markdown(f"{row1}")
-
-
-def update_progress(exercise_counter, answer_type):
-    print_function(f"update_progress(exercise_counter={exercise_counter}, answer_type={answer_type})")
-    # ignore if we're at the start or out of bounds
-    if exercise_counter <= 0 or exercise_counter > len(st.session_state.progress):
-        return
-
-    idx = exercise_counter - 1
-
-    if answer_type == "correct":
-        st.session_state.progress[idx] = "🟢"
-        st.session_state.score += 1
-
-    elif answer_type == "wrong":
-        st.session_state.progress[idx] = "🔴"
-
-    else:
-        st.session_state.progress[idx] = "⚪"
-
-    # def init_score_df():
-    # os.makedirs(DATA_PATH, exist_ok=True)
-    # if os.path.exists(SCORE_FILE):
-    #     df = pd.read_csv(SCORE_FILE)
-    # else:
-    #     df = pd.DataFrame(
-    #         columns=[
-    #             "NAME",
-    #             "DATETIME_START",
-    #             "DATE_START",
-    #             "TIME_START",
-    #             "EXERCISE_IDX",
-    #             "TAFEL",
-    #             "RAND_NUM",
-    #             "USER_ANSWER",
-    #             "SCORE",
-    #             "DURATION_TIME",
-    #             "MODEL_SCORE",
-    #             "PROBABILITY",
-    #         ]
-    #     )
-    #     # csv with ; as separator
-    #     df.to_csv(SCORE_FILE, index=False, sep=";")
-    # return df
-
-
-# def read_score_df():
-#     """Read current score DataFrame from CSV."""
-#     if os.path.exists(SCORE_FILE):
-#         df = pd.read_csv(SCORE_FILE, sep=";")
-#     else:
-#         df = init_score_df()
-#     return df
-
-
-# def save_score_df(df):
-#     """Save current score DataFrame to CSV."""
-#     os.makedirs(DATA_PATH, exist_ok=True)
-#     df.to_csv(SCORE_FILE, index=False, sep=";")
-
+# (1) DATA READS
 
 def read_score_df(user="Raphael",user_id=None, limit=1000000):
     print_white("Reading scores from session state...")
@@ -193,7 +70,6 @@ def read_score_df_updated_db(user="Raphael", user_id=None, limit=1000000):
     except Exception as e:
         print(f"Error reading from Supabase: {e}")
         return pd.DataFrame()
-    
 
 def add_answer_row_to_db():
     print_function("add_answer_row_to_db()")
@@ -213,7 +89,7 @@ def add_answer_row_to_db():
     model_score = score_flag / max(duration, eps)
 
     tafels_in_oef = ",".join([str(tafel) for tafel in st.session_state.selected_tables])
-    
+
     row = {
         "name": st.session_state.user,
         "datetime_start": st.session_state.starttime.strftime("%Y-%m-%d %H:%M:%S"),
@@ -234,7 +110,6 @@ def add_answer_row_to_db():
     response = sb.table("results").insert(row).execute()
 
     print_green(f"✅ Toegevoegd aan DB: {response.data}")
-
 
 def save_score_df(df, user_id=None):
     print_function("save_score_df()")
@@ -271,7 +146,45 @@ def save_score_df(df, user_id=None):
     except Exception as e:
         print(f"Error writing to Supabase: {e}")
 
+# (2) EXERCISES
 
+def generate_exercise(accepted_products, level, exercise_idx):
+    print_title("NEW EXERCISE")
+    print_function("New Exercise Generated")
+    random_accepted_product = accepted_products[
+        random.randint(0, len(accepted_products) - 1)
+    ]
+    if level == "Moeilijk":
+        table_probs = get_table_probs(random_accepted_product)
+
+        # choose a rand index from df table_probs based on probability in PROBABILITY col
+        random_number = int(
+            random.choices(
+                table_probs["RAND_NUM"].tolist(),
+                weights=table_probs["PROBABILITY"].tolist(),
+                k=1,
+            )[0]
+        )
+        
+    elif level == "Middelmatig":
+        random_number = random.randint(1, 10)
+    
+    else:
+
+        if (exercise_idx + 1) <= 10:
+            random_number = exercise_idx + 1
+        else: 
+            random_number = (exercise_idx+1) % 10
+        
+        if random_number == 0:
+            random_number = 10
+        
+
+    correct_answer = random_number * random_accepted_product
+
+    exercise_string = f"{random_number} x {random_accepted_product}"
+
+    return exercise_string, correct_answer, random_accepted_product, random_number
 
 def add_prob(df):
     eps = 1e-6
@@ -288,7 +201,6 @@ def add_prob(df):
     df["PROBABILITY"] = df["PROBABILITY"].fillna(1)
 
     return df
-
 
 def get_table_probs(table):
     print_function("get_table_probs()")
@@ -332,6 +244,103 @@ def get_table_probs(table):
 
     return table_stats
 
+def generate_prob_table(df):
+    print_function("generate_prob_table()")
+    # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
+    # First aggregate to handle duplicate TAFEL/RAND_NUM combinations
+    df = add_prob(df)
+    pivot_table = (
+        df[["TAFEL", "RAND_NUM", "PROBABILITY"]]
+        .groupby(["TAFEL", "RAND_NUM"], as_index=False)
+        .agg({"PROBABILITY": "mean"})
+        .assign(PROBABILITY_PCT=lambda x: x["PROBABILITY"] * 100)
+        .round({"PROBABILITY_PCT": 2})
+        .pivot(index="TAFEL", columns="RAND_NUM", values="PROBABILITY_PCT")
+        .reset_index()  # bring TAFEL into columns so headers are on one row
+    )
+
+    # Optional: make column names ints/strings consistently for Streamlit
+    pivot_table.columns = [str(c) for c in pivot_table.columns]
+
+    # Style for Streamlit - color coding low values green, high values red
+    # Apply gradient to numeric columns only; show blanks for NaN
+    numeric_cols = [c for c in pivot_table.columns if c != "TAFEL"]
+    styled_table = pivot_table.style.background_gradient(
+        cmap="RdYlGn_r", subset=numeric_cols, axis=None
+    ).format({c: "{:.2f}%" for c in numeric_cols})
+
+    # Display the styled table
+    return styled_table
+
+
+# (3) EVALUATION
+
+def check_answer(correct_answer, user_answer):
+    correct_answer = int(correct_answer)
+    user_answer = int(user_answer)
+
+    return correct_answer == user_answer
+
+def reset_progress(n_exercises):
+    # display n_exercises white circle emojis
+    st.session_state.duration_time_start = datetime.now()
+    st.session_state.starttime = datetime.now()
+    st.session_state.progress = ["⚪"] * n_exercises
+
+def render_progress():
+    """Display the circles as emoji."""
+    circles = st.session_state.get("progress", [])
+    if not circles:
+        return
+    row1 = " ".join(circles)
+    st.markdown("#### Voortgang")
+    st.markdown(f"{row1}")
+
+def update_progress(exercise_counter, answer_type):
+    print_function(f"update_progress(exercise_counter={exercise_counter}, answer_type={answer_type})")
+    # ignore if we're at the start or out of bounds
+    if exercise_counter <= 0 or exercise_counter > len(st.session_state.progress):
+        return
+
+    idx = exercise_counter - 1
+
+    if answer_type == "correct":
+        st.session_state.progress[idx] = "🟢"
+        st.session_state.score += 1
+
+    elif answer_type == "wrong":
+        st.session_state.progress[idx] = "🔴"
+
+    else:
+        st.session_state.progress[idx] = "⚪"
+
+    # def init_score_df():
+    # os.makedirs(DATA_PATH, exist_ok=True)
+    # if os.path.exists(SCORE_FILE):
+    #     df = pd.read_csv(SCORE_FILE)
+    # else:
+    #     df = pd.DataFrame(
+    #         columns=[
+    #             "NAME",
+    #             "DATETIME_START",
+    #             "DATE_START",
+    #             "TIME_START",
+    #             "EXERCISE_IDX",
+    #             "TAFEL",
+    #             "RAND_NUM",
+    #             "USER_ANSWER",
+    #             "SCORE",
+    #             "DURATION_TIME",
+    #             "MODEL_SCORE",
+    #             "PROBABILITY",
+    #         ]
+    #     )
+    #     # csv with ; as separator
+    #     df.to_csv(SCORE_FILE, index=False, sep=";")
+    # return df
+
+
+# (4) STREAMLIT
 
 def restart():
     print_function("restart()")
@@ -352,7 +361,6 @@ def restart():
     st.session_state.last_result = None
     st.rerun()
     render_progress()
-
 
 def init_session_state(generate_exercise, reset_progress):
     print_function("init_session_state()")
@@ -399,34 +407,7 @@ def init_session_state(generate_exercise, reset_progress):
         
     st.session_state.pokemon = get_all_pokemons()
 
-
-def generate_prob_table(df):
-    print_function("generate_prob_table()")
-    # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
-    # First aggregate to handle duplicate TAFEL/RAND_NUM combinations
-    df = add_prob(df)
-    pivot_table = (
-        df[["TAFEL", "RAND_NUM", "PROBABILITY"]]
-        .groupby(["TAFEL", "RAND_NUM"], as_index=False)
-        .agg({"PROBABILITY": "mean"})
-        .assign(PROBABILITY_PCT=lambda x: x["PROBABILITY"] * 100)
-        .round({"PROBABILITY_PCT": 2})
-        .pivot(index="TAFEL", columns="RAND_NUM", values="PROBABILITY_PCT")
-        .reset_index()  # bring TAFEL into columns so headers are on one row
-    )
-
-    # Optional: make column names ints/strings consistently for Streamlit
-    pivot_table.columns = [str(c) for c in pivot_table.columns]
-
-    # Style for Streamlit - color coding low values green, high values red
-    # Apply gradient to numeric columns only; show blanks for NaN
-    numeric_cols = [c for c in pivot_table.columns if c != "TAFEL"]
-    styled_table = pivot_table.style.background_gradient(
-        cmap="RdYlGn_r", subset=numeric_cols, axis=None
-    ).format({c: "{:.2f}%" for c in numeric_cols})
-
-    # Display the styled table
-    return styled_table
+# (5) STATS
 
 
 def generate_duration_table(df):
@@ -456,7 +437,6 @@ def generate_duration_table(df):
     # Display the styled table
     return styled_table
 
-
 def generate_score_table(df):
     print_function("generate_score_table()")
     # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
@@ -485,7 +465,6 @@ def generate_score_table(df):
     # Display the styled table
     return styled_table
 
-
 def get_min_per_dag(df):
     df_per_day = (
         df.groupby(["DATE_START"], as_index=False)
@@ -494,7 +473,6 @@ def get_min_per_dag(df):
     )
 
     return df_per_day
-
 
 def highlight_cells(val):
     if pd.isna(val):
@@ -511,7 +489,6 @@ def highlight_cells(val):
             return "background-color: red; color: white; font-weight: bold;"
     except:
         return ""
-
 
 def create_calendar_table(df, display):
     print_function("create_calendar_table()")
@@ -625,7 +602,6 @@ def create_calendar_table(df, display):
     df_calendar_styled = df_calendar.style.map(highlight_cells)
     return df_calendar_styled
 
-
 def generate_level_chart(df_scores, user=None):
     print_function("generate_level_chart()")
     # create a table with header and 20 rows. Each rows shows level from 1 to 20.
@@ -681,8 +657,7 @@ def generate_level_chart(df_scores, user=None):
     df_level = df_level.drop(columns=["idx"])
     
     return df_level
-    
-    
+
 def calculate_level():
     print_function("calculate_level()")    
     df = read_score_df(user=st.session_state.user)
@@ -698,7 +673,18 @@ def calculate_level():
             )
         
         df_tmp["LEN_TAFELS_IN_OEF"] = df_tmp["TAFELS_IN_OEF"].apply(lambda x: len(x.split(",")))
-        
+
+        # 18: (18, 89, "Tafel van 6: 20 oefeningen juist in 1 minuut en 45 seconden", "Garchomp",
+        #      "Supersnelle draak die bliksemsnel toeslaat met vernietigende kracht."),
+        # 19: (19, 90, "Tafel van 7: 20 oefeningen juist in 1 minuut en 45 seconden", "Hydreigon",
+        #      "Driekoppige draak die alles verwoest wat hij niet vertrouwt."),
+        # 20: (20, 91, "Tafel van 8: 20 oefeningen juist in 1 minuut en 45 seconden", "Darkrai",
+        #      "Schimmige Pokémon die nachtmerries veroorzaakt bij zijn tegenstanders."),
+        # 21: (21, 92, "Tafels van 6,7,8: 20 oefeningen juist in 2 minuten", "Rayquaza",
+        #      "Legendarische draak die de balans bewaart tussen land en zee."),
+        # 22: (22, 93, "Tafels van 6,7,8: 20 oefeningen juist in 1 minuut en 45 seconden", "Mewtwo",
+        #      "Genetisch gecreëerde super-Pokémon met ongeëvenaarde psychische kracht."),
+
         level_1 = len(df_tmp.query("TAFELS_IN_OEF=='2'")) > 0
         level_2 = len(df_tmp.query("TAFELS_IN_OEF=='3'")) > 0
         level_3 = len(df_tmp.query("TAFELS_IN_OEF=='4'")) > 0
@@ -716,7 +702,12 @@ def calculate_level():
         level_15 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90")) > 0
         level_16 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=72")) > 0
         level_17 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=60")) > 0
-        level_18 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
+        level_18 = len(df_tmp.query("TAFELS_IN_OEF=='6' and TOTAL_MINUTES<=105")) > 0
+        level_19 = len(df_tmp.query("TAFELS_IN_OEF=='7' and TOTAL_MINUTES<=105")) > 0
+        level_20 = len(df_tmp.query("TAFELS_IN_OEF=='8' and TOTAL_MINUTES<=105")) > 0
+        level_21 = len(df_tmp.query("TAFELS_IN_OEF=='6,7,8' and TOTAL_MINUTES<=120")) > 0
+        level_22 = len(df_tmp.query("TAFELS_IN_OEF=='6,7,8' and TOTAL_MINUTES<=105")) > 0
+        level_23 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
 
     return {
         0: level_0,
@@ -738,26 +729,12 @@ def calculate_level():
         16: level_16,
         17: level_17,
         18: level_18,
+        19: level_19,
+        20: level_20,
+        21: level_21,
+        22: level_22,
+        23: level_23,
     }
-    
-def get_highest_level_pokemon_remove():
-    
-    level_dict = calculate_level()
-    pokemon = ["Magikarp"]
-    level_info = get_level_info()
-
-    
-    for level, achieved in level_dict.items():
-        if achieved:
-            highest_level = level
-            
-    # get highest level where achieved is True
-    for level, achieved in level_dict.items():
-        if achieved:
-            highest_level = level
-            pokemon = level_info[level][3]
-    
-    return pokemon
 
 def get_all_pokemons():
     print_function("get_all_pokemons()")
@@ -776,7 +753,6 @@ def get_all_pokemons():
             pokemon_list.append(iter_pokemon)
 
     return pokemon_list
-    
 
 def get_pokemon_hover_text(pokemon):
     level_info = get_level_info()
@@ -810,11 +786,15 @@ def get_level_info():
         15: (15, 83, "Alle tafels tot 9: 20 oefeningen juist in 1 minuut en 30 seconden", "Dragonite", "Goedaardige draak die verrassend vriendelijk is ondanks zijn kracht."),
         16: (16, 85, "Alle tafels tot 9: 20 oefeningen juist in 1 minuut en 12 seconden", "Tyranitar", "Gigantische en agressieve Pokémon die bergen kan verplaatsen."),
         17: (17, 88, "Alle tafels tot 9: 20 oefeningen juist in 1 minuut", "Metagross", "Superintelligente Pokémon met een computerachtig brein en enorme kracht."),
-        18: (18, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
+        18: (18, 89, "Tafel van 6: 20 oefeningen juist in 1 minuut en 45 seconden", "Garchomp", "Supersnelle draak die bliksemsnel toeslaat met vernietigende kracht."),
+        19: (19, 90, "Tafel van 7: 20 oefeningen juist in 1 minuut en 45 seconden", "Hydreigon", "Driekoppige draak die alles verwoest wat hij niet vertrouwt."),
+        20: (20, 91, "Tafel van 8: 20 oefeningen juist in 1 minuut en 45 seconden", "Darkrai", "Schimmige Pokémon die nachtmerries veroorzaakt bij zijn tegenstanders."),
+        21: (21, 92, "Tafels van 6,7,8: 20 oefeningen juist in 2 minuten", "Rayquaza", "Legendarische draak die de balans bewaart tussen land en zee."),
+        22: (22, 93, "Tafels van 6,7,8: 20 oefeningen juist in 1 minuut en 45 seconden", "Mewtwo", "Genetisch gecreëerde super-Pokémon met ongeëvenaarde psychische kracht."),
+        23: (23, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
     
     return level_info
-
 
 def get_difficult_exercises(user, starttime):
     print_function(f"get_difficult_exercises(user={user}, starttime={starttime})")
@@ -829,7 +809,6 @@ def get_difficult_exercises(user, starttime):
     list_wrong_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + " x " + x["TAFEL"].astype(str) + " = " + x["USER_ANSWER"].astype(str))["EXERCISE"].tolist()
 
     return list_correct_answers, list_wrong_answers
-
 
 def plot_evolution_per_tafel(user, tafel):
     print_function(f"plot_evolution_per_tafel(user={user}, tafel={tafel})")
@@ -862,7 +841,6 @@ def plot_evolution_per_tafel(user, tafel):
     # show plot
         st.plotly_chart(fig)
 
-
 def score_per_set(df_scores):
     print_function("score_per_set(df_scores)")
     df_scores["SCORE"] = df_scores["SCORE"].apply(lambda d: 0 if d<1 else d)
@@ -880,8 +858,6 @@ def translate_sec_to_min_sec(seconds):
     minutes = seconds // 60
     sec = seconds % 60
     return f"{int(minutes)} min {int(sec)} sec"
-
-
         
 def reset_exercises():
     print_title("Settings changed")
