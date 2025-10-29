@@ -805,7 +805,7 @@ def get_level_info():
         25: (25, 96, "Tafel van 8: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Lugia","Bewaker van de zeeën, met vleugels die stormen kunnen kalmeren of ontketenen."),
         26: (26, 97, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Giratina","Heerser van de omgekeerde wereld, die balans houdt tussen leven en dood."),
         27: (27, 98, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 15 seconden", "Ho-Oh","Mythische regenboogvogel die geluk brengt en herboren zielen tot leven wekt."),
-        28: (23, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
+        28: (28, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
     
     return level_info
