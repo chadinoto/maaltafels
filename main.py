@@ -285,13 +285,13 @@ with tab_stats:
             },
         )
 
-        st.subheader("Evolutie score per tafel")
-        plot = plot_progress(displaytype='SCORE')
-        st.plotly_chart(plot)
-        st.subheader("Evolutie tijd per tafel")
-
-        plot = plot_progress(displaytype='DURATION_TIME')
-        st.plotly_chart(plot)
+        # st.subheader("Evolutie score per tafel")
+        # plot = plot_progress(displaytype='SCORE')
+        # st.plotly_chart(plot)
+        # st.subheader("Evolutie tijd per tafel")
+        #
+        # plot = plot_progress(displaytype='DURATION_TIME')
+        # st.plotly_chart(plot)
 
         st.subheader("Recente gedetailleerde resultaten")
         st.dataframe(
