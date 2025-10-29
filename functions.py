@@ -945,7 +945,7 @@ def plot_progress(displaytype='SCORE'):
         fig=(
             px.line(df_plot, x="DATE_START", y="SCORE_PERC", color="TAFEL", text="SCORE_LABEL", title="Vooruitgang voor elke tafel",
                     markers=True,color_discrete_sequence=px.colors.qualitative.Set2, category_orders={"TAFEL":[2,3,4,5,6,7,8,9]},
-                    facet_col="TAFEL", facet_col_wrap=1)
+                    facet_col="TAFEL", facet_col_wrap=1,template="simple_white")
                 .update_traces(
                     textposition="top center",
                     textfont_size=10,
