@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 from datetime import timedelta
 from functions import *
+import math
 from time import time
 
 
@@ -312,8 +313,9 @@ with tab_level:
     if df_scores.empty:
         st.info("Geen level beschikbaar.")
     else:
+        df_table = generate_level_chart(df_scores, st.session_state.user)
         st.data_editor(
-            generate_level_chart(df_scores, st.session_state.user),
+            df_table,
             column_config={
             "Afbeelding": st.column_config.ImageColumn("Afbeelding"),
             "Level": "Level",
@@ -322,6 +324,8 @@ with tab_level:
             },
             hide_index=True,
             width="content",
+            # round up height to nearest integer
+            height=math.ceil(37*len(df_table)) # 36.36 pixels per row
         )
 
 

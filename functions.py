@@ -663,7 +663,9 @@ def calculate_level():
     df = read_score_df(user=st.session_state.user)
     level_0 = True
     if df.empty:
-        level_1 = False; level_2 = False; level_3 = False; level_4 = False; level_5 = False; level_6 = False; level_7 = False; level_8 = False; level_9 = False; level_10 = False; level_11 = False; level_12 = False; level_13 = False; level_14 = False; level_15 = False; level_16 = False; level_17 = False; level_18 = False;  
+        level_1 = False; level_2 = False; level_3 = False; level_4 = False; level_5 = False; level_6 = False; level_7 = False; level_8 = False; level_9 = False;
+        level_10 = False; level_11 = False; level_12 = False; level_13 = False; level_14 = False; level_15 = False; level_16 = False; level_17 = False; level_18 = False;
+        level_19 = False; level_20 = False; level_21 = False; level_22 = False; level_23 = False
     else:
         
         df_tmp = (df 
