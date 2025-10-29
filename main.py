@@ -314,16 +314,22 @@ with tab_level:
         st.info("Geen level beschikbaar.")
     else:
         df_table = generate_level_chart(df_scores, st.session_state.user)
+
+        df_table = df_table.drop(columns=["Level"])
+
         st.data_editor(
             df_table,
             column_config={
-            "Afbeelding": st.column_config.ImageColumn("Afbeelding"),
-            "Level": "Level",
-            "Wat moet je kunnen om deze Pokémon te krijgen?": st.column_config.TextColumn("Beschrijving", width="large"),
-            "Pokémon": "Pokémon",
+                "Afbeelding": st.column_config.ImageColumn("Afbeelding"),
+                # "Level": "Level",
+                "Wat moet je kunnen om deze Pokémon te krijgen?": st.column_config.TextColumn(
+                    "Beschrijving",
+                    width="large"  # makes the column use extra space
+                    ),
+                "Pokémon": "Pokémon",
             },
             hide_index=True,
-            width="content",
+            width="stretch",
             # round up height to nearest integer
             height=math.ceil(37*len(df_table)) # 36.36 pixels per row
         )

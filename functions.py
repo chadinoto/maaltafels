@@ -665,7 +665,8 @@ def calculate_level():
     if df.empty:
         level_1 = False; level_2 = False; level_3 = False; level_4 = False; level_5 = False; level_6 = False; level_7 = False; level_8 = False; level_9 = False;
         level_10 = False; level_11 = False; level_12 = False; level_13 = False; level_14 = False; level_15 = False; level_16 = False; level_17 = False; level_18 = False;
-        level_19 = False; level_20 = False; level_21 = False; level_22 = False; level_23 = False
+        level_19 = False; level_20 = False; level_21 = False; level_22 = False; level_23 = False; level_24 = False; level_25 = False; level_26 = False; level_27 = False;
+        level_28 = False
     else:
         
         df_tmp = (df 
@@ -676,16 +677,11 @@ def calculate_level():
         
         df_tmp["LEN_TAFELS_IN_OEF"] = df_tmp["TAFELS_IN_OEF"].apply(lambda x: len(x.split(",")))
 
-        # 18: (18, 89, "Tafel van 6: 20 oefeningen juist in 1 minuut en 45 seconden", "Garchomp",
-        #      "Supersnelle draak die bliksemsnel toeslaat met vernietigende kracht."),
-        # 19: (19, 90, "Tafel van 7: 20 oefeningen juist in 1 minuut en 45 seconden", "Hydreigon",
-        #      "Driekoppige draak die alles verwoest wat hij niet vertrouwt."),
-        # 20: (20, 91, "Tafel van 8: 20 oefeningen juist in 1 minuut en 45 seconden", "Darkrai",
-        #      "Schimmige Pokémon die nachtmerries veroorzaakt bij zijn tegenstanders."),
-        # 21: (21, 92, "Tafels van 6,7,8: 20 oefeningen juist in 2 minuten", "Rayquaza",
-        #      "Legendarische draak die de balans bewaart tussen land en zee."),
-        # 22: (22, 93, "Tafels van 6,7,8: 20 oefeningen juist in 1 minuut en 45 seconden", "Mewtwo",
-        #      "Genetisch gecreëerde super-Pokémon met ongeëvenaarde psychische kracht."),
+        # 23: (23, 94, "Tafel van 6: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Zacian","Legendarische zwaard-Pokémon die ongekende aanvalskracht bezit en moeiteloos draken kan verslaan."),
+        # 24: (24, 95, "Tafel van 7: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Eternatus","Reusachtige Pokémon van buiten de wereld, bron van oneindige energie en Dynamax-kracht."),
+        # 25: (25, 96, "Tafel van 8: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Lugia","Bewaker van de zeeën, met vleugels die stormen kunnen kalmeren of ontketenen."),
+        # 26: (26, 97, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Giratina","Heerser van de omgekeerde wereld, die balans houdt tussen leven en dood."),
+        # 27: (27, 98, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 15 seconden", "Ho-Oh","Mythische regenboogvogel die geluk brengt en herboren zielen tot leven wekt."),
 
         level_1 = len(df_tmp.query("TAFELS_IN_OEF=='2'")) > 0
         level_2 = len(df_tmp.query("TAFELS_IN_OEF=='3'")) > 0
@@ -709,7 +705,12 @@ def calculate_level():
         level_20 = len(df_tmp.query("TAFELS_IN_OEF=='8' and TOTAL_MINUTES<=105")) > 0
         level_21 = len(df_tmp.query("TAFELS_IN_OEF=='6,7,8' and TOTAL_MINUTES<=120")) > 0
         level_22 = len(df_tmp.query("TAFELS_IN_OEF=='6,7,8' and TOTAL_MINUTES<=105")) > 0
-        level_23 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
+        level_23 = len(df_tmp.query("TAFELS_IN_OEF=='6' and TOTAL_MINUTES<=90 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
+        level_24 = len(df_tmp.query("TAFELS_IN_OEF=='7' and TOTAL_MINUTES<=90 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
+        level_25 = len(df_tmp.query("TAFELS_IN_OEF=='8' and TOTAL_MINUTES<=90 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
+        level_26 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
+        level_27 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=75 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
+        level_28 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
 
     return {
         0: level_0,
@@ -736,6 +737,11 @@ def calculate_level():
         21: level_21,
         22: level_22,
         23: level_23,
+        24: level_24,
+        25: level_25,
+        26: level_26,
+        27: level_27,
+        28: level_28
     }
 
 def get_all_pokemons():
@@ -793,7 +799,12 @@ def get_level_info():
         20: (20, 91, "Tafel van 8: 20 oefeningen juist in 1 minuut en 45 seconden", "Darkrai", "Schimmige Pokémon die nachtmerries veroorzaakt bij zijn tegenstanders."),
         21: (21, 92, "Tafels van 6,7,8: 20 oefeningen juist in 2 minuten", "Rayquaza", "Legendarische draak die de balans bewaart tussen land en zee."),
         22: (22, 93, "Tafels van 6,7,8: 20 oefeningen juist in 1 minuut en 45 seconden", "Mewtwo", "Genetisch gecreëerde super-Pokémon met ongeëvenaarde psychische kracht."),
-        23: (23, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
+        23: (23, 94, "Tafel van 6: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Zacian","Legendarische zwaard-Pokémon die ongekende aanvalskracht bezit en moeiteloos draken kan verslaan."),
+        24: (24, 95, "Tafel van 7: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Eternatus","Reusachtige Pokémon van buiten de wereld, bron van oneindige energie en Dynamax-kracht."),
+        25: (25, 96, "Tafel van 8: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Lugia","Bewaker van de zeeën, met vleugels die stormen kunnen kalmeren of ontketenen."),
+        26: (26, 97, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Giratina","Heerser van de omgekeerde wereld, die balans houdt tussen leven en dood."),
+        27: (27, 98, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 15 seconden", "Ho-Oh","Mythische regenboogvogel die geluk brengt en herboren zielen tot leven wekt."),
+        28: (23, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
     
     return level_info
