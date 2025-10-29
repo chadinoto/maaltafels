@@ -3,3 +3,4 @@
 # ignore data files
 data/
 __pycache__/functions.cpython-312.pyc
+venv/
