@@ -1,7 +1,30 @@
-# add .env
-.env
-# ignore data files
-data/
-__pycache__/functions.cpython-312.pyc
+# Virtual envs
 venv/
+.venv/
+env/
+
+# Python build/cache
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editors/IDEs (machine-specific)
 .idea/
+.vscode/*
+# (optional) allow a curated subset you want to share:
+!.vscode/extensions.json
+!.vscode/settings.json  # keep only portable settings; avoid interpreter paths
+
+# Streamlit
+.streamlit/secrets.toml
+# (optional) keep config
+#!.streamlit/config.toml
+
+# OS junk
+.DS_Store
+Thumbs.db
