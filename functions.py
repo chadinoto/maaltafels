@@ -951,9 +951,18 @@ def plot_progress(displaytype='SCORE'):
                     textfont_size=10,
                     mode="lines+markers+text"
                 )
-                .update_layout(xaxis_title="Datum", yaxis_title="Score", height=2000)
-                .update_yaxes(range=[0,1.2])
+                # .update_layout(xaxis_title="Datum", yaxis_title="Score", height=2000)
+                # .update_yaxes(range=[0,1.2])
+                .update_xaxes(showticklabels=True, title_text="Datum")
+                .update_yaxes(title_text="Score")
+                .update_layout(height=2000, showlegend=False)
             )
+
+        # margin for y axis max to display text
+        if not df_plot.empty:
+            y_max = float(df_plot["SCORE_PERC"].max())
+            y_min = float(df_plot["SCORE_PERC"].min())
+            fig.update_yaxes(range=[y_min*0.8, y_max * 1.2])
 
     if displaytype == 'DURATION_TIME':
 
@@ -962,14 +971,24 @@ def plot_progress(displaytype='SCORE'):
                     title="Vooruitgang voor elke tafel",
                     markers=True, color_discrete_sequence=px.colors.qualitative.Set2,
                     category_orders={"TAFEL": [2, 3, 4, 5, 6, 7, 8, 9]},
-                    facet_col="TAFEL", facet_col_wrap=1)
+                    facet_col="TAFEL", facet_col_wrap=1,
+                    template="simple_white")
             .update_traces(
                 textposition="top center",
                 textfont_size=10,
                 mode="lines+markers+text"
             )
-            .update_layout(xaxis_title="Datum", yaxis_title="Tijd", height=2000)
+            # .update_layout(xaxis_title="Datum", yaxis_title="Tijd", height=2000)
+            .update_xaxes(showticklabels=True, title_text="Datum")
+            .update_yaxes(title_text="Tijd")
+            .update_layout(height=2000, showlegend=False)
         )
+
+        # margin for y axis max to display text
+        if not df_plot.empty:
+            y_max = float(df_plot["TIJD"].max())
+            y_min = float(df_plot["TIJD"].min())
+            fig.update_yaxes(range=[y_min*0.8, y_max*1.2])
 
     return fig
 
