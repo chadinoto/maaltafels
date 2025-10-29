@@ -25,31 +25,36 @@ if st.session_state.reset_answer:
 # (2) LAYOUT MAIN BODY ----
 
 # Header section above tabs
-st.write(f"Jouw verzamelde Pokemons:")
-# Display unique Pokemon in rows with multiple columns but keep order
-pokemon_list = st.session_state.pokemon
-if pokemon_list:
-    # Create rows of 10 Pokemon each
-    pokemon_per_row = 10
-    for i in range(0, len(pokemon_list), pokemon_per_row):
-        cols = st.columns(pokemon_per_row)
-        for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
-            with cols[j]:
-                # small font caption
-                st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
-                st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
-    
-    st.markdown(
-        """
-        <style>
-        img {
-        border: 2px solid #ccc;
-        border-radius: 8px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+pokemon_header = st.empty()
+
+def render_pokemon_header(target, pokemon_list):
+    with target.container():
+        st.write("Jouw verzamelde Pokemons:")
+        if pokemon_list:
+            pokemon_per_row = 10
+            for i in range(0, len(pokemon_list), pokemon_per_row):
+                cols = st.columns(pokemon_per_row)
+                for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
+                    with cols[j]:
+                        # small font caption
+                        st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
+                        st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
+
+            st.markdown(
+                """
+                <style>
+                img {
+                border: 2px solid #ccc;
+                border-radius: 8px;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+
+# Initial render
+render_pokemon_header(pokemon_header, st.session_state.pokemon)
+
 tabs = st.tabs(["Oefeningen", "Level","Stats"])
 tab_oef, tab_level, tab_stats = tabs
 
@@ -167,8 +172,8 @@ with tab_oef:
                 st.write("De juiste antwoorden waren:")
                 for ex in list_correct_answers:
                     st.write(f"✅ {ex}")
-        reset_exercises()
-        restart()
+        st.session_state.pokemon = get_all_pokemons()
+        render_pokemon_header(pokemon_header, st.session_state.pokemon)
 
     if st.session_state.exercise_counter > st.session_state.n_exercises:
         print_red("DOES THIS EVER HAPPEN?")
