@@ -2,6 +2,7 @@
 venv/
 .venv/
 env/
+.env
 
 # Python build/cache
 __pycache__/
@@ -28,3 +29,5 @@ __pycache__/
 # OS junk
 .DS_Store
 Thumbs.db
+
+*.csv
