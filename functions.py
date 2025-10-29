@@ -939,6 +939,7 @@ def plot_progress(displaytype='SCORE'):
         .drop(columns=["SCORE"])
     )
 
+    # chose between SCORE and DURATION_TIME
     if displaytype == 'SCORE':
 
         fig=(
