@@ -8,7 +8,7 @@ from datetime import datetime
 import re
 from aux_functions import *
 from supabase import create_client, Client
-import plotly.express as px
+# import plotly.express as px
 
 # load_dotenv()
 # url = os.getenv("SUPABASE_URL")
