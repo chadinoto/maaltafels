@@ -8,6 +8,7 @@ from datetime import datetime
 import re
 from aux_functions import *
 from supabase import create_client, Client
+import plotly.express as px
 
 # load_dotenv()
 # url = os.getenv("SUPABASE_URL")
@@ -920,4 +921,54 @@ def reset_exercises():
     st.session_state.pokemon = get_all_pokemons()
     st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
     # No st.rerun(): Streamlit reruns automatically after on_change.
+
+
+def plot_progress(displaytype='SCORE'):
+    df = read_score_df(user=st.session_state.user)
+    df_plot = (
+        df
+        .assign(SCORE=lambda x: x["SCORE"].mask(x["SCORE"] < 1, 0))
+        .groupby(["DATE_START", "TAFEL"])
+        .agg(SCORE=("SCORE", "sum"), TIJD=("DURATION_TIME", "mean"), N=("DURATION_TIME", "count"))
+        .assign(SCORE_PERC=lambda x: x["SCORE"] / x["N"])
+        .assign(SCORE_LABEL=lambda x: x["SCORE_PERC"].apply(lambda d: f"{d * 100:.0f}%"))
+        .assign(DURATION_TIME_LABEL=lambda x: x["TIJD"].apply(lambda d: f"{d:.0f}sec"))
+
+        .reset_index()
+        .assign(TAFEL=lambda x: pd.Categorical(x["TAFEL"], categories=[2, 3, 4, 5, 6, 7, 8, 9], ordered=True))
+        .drop(columns=["SCORE"])
+    )
+
+    if displaytype == 'SCORE':
+
+        fig=(
+            px.line(df_plot, x="DATE_START", y="SCORE_PERC", color="TAFEL", text="SCORE_LABEL", title="Vooruitgang voor elke tafel",
+                    markers=True,color_discrete_sequence=px.colors.qualitative.Set2, category_orders={"TAFEL":[2,3,4,5,6,7,8,9]},
+                    facet_col="TAFEL", facet_col_wrap=1)
+                .update_traces(
+                    textposition="top center",
+                    textfont_size=10,
+                    mode="lines+markers+text"
+                )
+                .update_layout(xaxis_title="Datum", yaxis_title="Score", height=2000)
+                .update_yaxes(range=[0,1.2])
+            )
+
+    if displaytype == 'DURATION_TIME':
+
+        fig = (
+            px.line(df_plot, x="DATE_START", y="TIJD", color="TAFEL", text="DURATION_TIME_LABEL",
+                    title="Vooruitgang voor elke tafel",
+                    markers=True, color_discrete_sequence=px.colors.qualitative.Set2,
+                    category_orders={"TAFEL": [2, 3, 4, 5, 6, 7, 8, 9]},
+                    facet_col="TAFEL", facet_col_wrap=1)
+            .update_traces(
+                textposition="top center",
+                textfont_size=10,
+                mode="lines+markers+text"
+            )
+            .update_layout(xaxis_title="Datum", yaxis_title="Tijd", height=2000)
+        )
+
+    return fig
 
