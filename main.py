@@ -37,9 +37,13 @@ def render_pokemon_header(target, pokemon_list):
                 cols = st.columns(pokemon_per_row)
                 for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
                     with cols[j]:
-                        # small font caption
-                        st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
-                        st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
+                        if pokemon != "Giratina":
+                            # small font caption
+                            st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
+                            st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
+                        else: 
+                            st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
+                            st.image(f"https://img.pokemondb.net/artwork/large/giratina-altered.jpg", width=70)
 
             st.markdown(
                 """

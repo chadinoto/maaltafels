@@ -644,6 +644,11 @@ def generate_level_chart(df_scores, user=None):
         
     )
     
+    df_level["Afbeelding"] = df_level.apply(
+        lambda row: "https://img.pokemondb.net/artwork/large/giratina-altered.jpg" if row["Pokémon"] == "Giratina" else row["Afbeelding"],
+        axis=1
+    )
+    
     df_level = df_level[["idx","Level", "Wat moet je kunnen om deze Pokemon te krijgen?", "Pokémon","Afbeelding","Wat meer uitleg over jouw Pokemon 😊"]]
     
     # afbeelding leeg indien level = False
@@ -807,7 +812,7 @@ def get_level_info():
         27: (27, 98, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 15 seconden", "Ho-Oh","Mythische regenboogvogel die geluk brengt en herboren zielen tot leven wekt."),
         28: (28, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
-    
+
     return level_info
 
 def get_difficult_exercises(user, starttime):
@@ -933,7 +938,6 @@ def plot_progress(displaytype='SCORE'):
         .assign(SCORE_PERC=lambda x: x["SCORE"] / x["N"])
         .assign(SCORE_LABEL=lambda x: x["SCORE_PERC"].apply(lambda d: f"{d * 100:.0f}%"))
         .assign(DURATION_TIME_LABEL=lambda x: x["TIJD"].apply(lambda d: f"{d:.0f}sec"))
-
         .reset_index()
         .assign(TAFEL=lambda x: pd.Categorical(x["TAFEL"], categories=[2, 3, 4, 5, 6, 7, 8, 9], ordered=True))
         .drop(columns=["SCORE"])
