@@ -643,11 +643,12 @@ def generate_level_chart(df_scores, user=None):
         lambda name: f"https://img.pokemondb.net/artwork/large/{name.lower()}.jpg"
         
     )
-    
+    #img giratina not found
     df_level["Afbeelding"] = df_level.apply(
         lambda row: "https://img.pokemondb.net/artwork/large/giratina-altered.jpg" if row["Pokémon"] == "Giratina" else row["Afbeelding"],
         axis=1
-    )
+    ) 
+    
     
     df_level = df_level[["idx","Level", "Wat moet je kunnen om deze Pokemon te krijgen?", "Pokémon","Afbeelding","Wat meer uitleg over jouw Pokemon 😊"]]
     
