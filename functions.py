@@ -92,6 +92,7 @@ def add_answer_row_to_db():
     tafels_in_oef = ",".join([str(tafel) for tafel in st.session_state.selected_tables])
 
     row = {
+        # "uuid": st.session_state.loggedin_user,
         "name": st.session_state.user,
         "datetime_start": st.session_state.starttime.strftime("%Y-%m-%d %H:%M:%S"),
         "date_start": st.session_state.starttime.strftime("%Y-%m-%d"),
@@ -106,6 +107,7 @@ def add_answer_row_to_db():
         "probability": 0,  # temp; we recompute below for all rows
         "tafels_in_oef": tafels_in_oef,
         "difficulty_level": st.session_state.difficulty_level,
+        "type_exercise": st.session_state.type_exercise,
     }
 
     response = sb.table("results").insert(row).execute()
@@ -149,45 +151,64 @@ def save_score_df(df, user_id=None):
 
 # (2) EXERCISES
 
-def generate_exercise(accepted_products, level, exercise_idx):
+def generate_exercise(accepted_products, level, exercise_idx, type):
     print_title("NEW EXERCISE")
-    print_function("New Exercise Generated")
-    random_accepted_product = accepted_products[
-        random.randint(0, len(accepted_products) - 1)
-    ]
-    if level == "Moeilijk":
-        table_probs = get_table_probs(random_accepted_product)
+    print_function("New Exercise Generated: vermenigvuldiging")
+    if type == "vermenigvuldiging":
+        random_accepted_product = accepted_products[
+            random.randint(0, len(accepted_products) - 1)
+        ]
+        if level == "Moeilijk":
+            table_probs = get_table_probs(random_accepted_product)
 
-        # choose a rand index from df table_probs based on probability in PROBABILITY col
-        random_number = int(
-            random.choices(
-                table_probs["RAND_NUM"].tolist(),
-                weights=table_probs["PROBABILITY"].tolist(),
-                k=1,
-            )[0]
-        )
+            # choose a rand index from df table_probs based on probability in PROBABILITY col
+            random_number = int(
+                random.choices(
+                    table_probs["RAND_NUM"].tolist(),
+                    weights=table_probs["PROBABILITY"].tolist(),
+                    k=1,
+                )[0]
+            )
+            
+        elif level == "Middelmatig":
+            random_number = random.randint(1, 10)
         
-    elif level == "Middelmatig":
+        else:
+
+            if (exercise_idx + 1) <= 10:
+                random_number = exercise_idx + 1
+            else: 
+                random_number = (exercise_idx+1) % 10
+            
+            if random_number == 0:
+                random_number = 10
+            
+
+        correct_answer = random_number * random_accepted_product
+
+        exercise_string = f"{random_number} x {random_accepted_product}"
+
+        return exercise_string, correct_answer, random_accepted_product, random_number
+
+    elif type == "deling":
+        print_title("NEW EXERCISE")
+        print_function("New Exercise Generated: deling")
+        random_accepted_product = accepted_products[
+            random.randint(0, len(accepted_products) - 1)
+        ]
         random_number = random.randint(1, 10)
-    
-    else:
-
-        if (exercise_idx + 1) <= 10:
-            random_number = exercise_idx + 1
-        else: 
-            random_number = (exercise_idx+1) % 10
         
-        if random_number == 0:
-            random_number = 10
+        quotient = random_number * random_accepted_product
         
+        correct_answer = random_number
+        
+        exercise_string = f"{quotient} / {random_accepted_product}"
 
-    correct_answer = random_number * random_accepted_product
+        return exercise_string, correct_answer, random_accepted_product, quotient
 
-    exercise_string = f"{random_number} x {random_accepted_product}"
-
-    return exercise_string, correct_answer, random_accepted_product, random_number
 
 def add_prob(df):
+    df = df.copy()
     eps = 1e-6
 
     # Recompute PROBABILITY safely for all rows
@@ -249,6 +270,7 @@ def generate_prob_table(df):
     print_function("generate_prob_table()")
     # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
     # First aggregate to handle duplicate TAFEL/RAND_NUM combinations
+    df = df.query("TYPE_EXERCISE == 'vermenigvuldiging'")
     df = add_prob(df)
     pivot_table = (
         df[["TAFEL", "RAND_NUM", "PROBABILITY"]]
@@ -357,7 +379,7 @@ def restart():
         st.session_state.correct,
         st.session_state.x1,
         st.session_state.x2,
-    ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
+    ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0, st.session_state.type_exercise)
     st.session_state.exercise_counter = 0
     st.session_state.last_result = None
     st.rerun()
@@ -383,6 +405,7 @@ def init_session_state(generate_exercise, reset_progress):
         "status": 1,
         "pokemon": ["Magikarp"],
         "df_scores": pd.DataFrame(),
+        "type_exercise": "vermenigvuldiging",
     }
 
     for key, val in defaults.items():
@@ -401,7 +424,7 @@ def init_session_state(generate_exercise, reset_progress):
             st.session_state.correct,
             st.session_state.x1,
             st.session_state.x2,
-        ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0)
+        ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0, st.session_state.type_exercise)
         st.session_state.last_result = None
         st.session_state.prev_exercise = None
         st.session_state.prev_correct = None
@@ -442,7 +465,11 @@ def generate_score_table(df):
     print_function("generate_score_table()")
     # display in a table that i can use in my streamlit app. cells with low values can be colored green, high values in red
     # First aggregate to handle duplicate TAFEL/RAND_NUM combinations
+    
+    print_white("add prob")
     df = add_prob(df)
+    
+    print_white("create pivot")
     pivot_table = (
         df[["TAFEL", "RAND_NUM", "SCORE"]]
         .assign(SCORE=lambda x: x["SCORE"].apply(lambda score: 1 if score == 1 else 0))
@@ -453,12 +480,17 @@ def generate_score_table(df):
         .reset_index()  # bring TAFEL into columns so headers are on one row
     )
 
+    print_white("convert all cols to str")
     # Optional: make column names ints/strings consistently for Streamlit
     pivot_table.columns = [str(c) for c in pivot_table.columns]
 
     # Style for Streamlit - color coding low values green, high values red
     # Apply gradient to numeric columns only; show blanks for NaN
+    
+    print_white("process some nums values")
     numeric_cols = [c for c in pivot_table.columns if c != "TAFEL"]
+    
+    print_white("add color styling")
     styled_table = pivot_table.style.background_gradient(
         cmap="RdYlGn", subset=numeric_cols, axis=None
     ).format({c: "{:.2f}" for c in numeric_cols})
@@ -816,13 +848,34 @@ def get_difficult_exercises(user, starttime):
     df_filtered = df[(df["NAME"] == user) & (pd.to_datetime(df["DATETIME_START"]).dt.strftime("%Y-%m-%d %H:%M:%S") == pd.to_datetime(starttime).strftime("%Y-%m-%d %H:%M:%S"))]
     
     df_wrong_answers = df_filtered[df_filtered.SCORE<1]
-    df_wrong_answers = df_wrong_answers.assign(ANSWER=lambda x: (x["TAFEL"]*x["RAND_NUM"]).astype(str))
     
-    list_correct_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + " x " + x["TAFEL"].astype(str) + " = " + x["ANSWER"].astype(str))["EXERCISE"].tolist()
-    
-    list_wrong_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + " x " + x["TAFEL"].astype(str) + " = " + x["USER_ANSWER"].astype(str))["EXERCISE"].tolist()
+    if not df_wrong_answers.empty:
+        if df_wrong_answers.iloc[0]['TYPE_EXERCISE'] == 'vermenigvuldiging':
+            type_signal = ' x '
+            
+            df_wrong_answers = df_wrong_answers.rename(columns={"X1": "RAND_NUM", "X2": "TAFEL", "USER_ANSWER": "USER_ANSWER"})
+            
+            df_wrong_answers = df_wrong_answers.assign(ANSWER=lambda x: (x["TAFEL"]*x["RAND_NUM"]).astype(str))
+            
+            list_correct_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + type_signal + x["TAFEL"].astype(str) + " = " + x["ANSWER"].astype(str))["EXERCISE"].tolist()
+            
+            list_wrong_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + type_signal + x["TAFEL"].astype(str) + " = " + x["USER_ANSWER"].astype(str))["EXERCISE"].tolist()
+            
+        elif df_wrong_answers.iloc[0]['TYPE_EXERCISE'] == 'deling':
+            type_signal = " : "
+            
+            # df_wrong_answers = df_wrong_answers.rename(columns={"X1": "RAND_NUM", "X2": "TAFEL", "USER_ANSWER": "RAND_NUM"})
+            
+            df_wrong_answers = df_wrong_answers.assign(ANSWER=lambda x: (x["RAND_NUM"]/x["TAFEL"]).astype(str))
+            
+            list_correct_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + type_signal + x["TAFEL"].astype(str) + " = " + x["ANSWER"].astype(float).astype(int).astype(str))["EXERCISE"].tolist()
+            
+            list_wrong_answers = df_wrong_answers.assign(EXERCISE=lambda x: x["RAND_NUM"].astype(str) + type_signal + x["TAFEL"].astype(str) + " = " + x["USER_ANSWER"].astype(float).astype(int).astype(str))["EXERCISE"].tolist()
 
-    return list_correct_answers, list_wrong_answers
+        return list_correct_answers, list_wrong_answers
+    
+    else:
+        return [], []
 
 def plot_evolution_per_tafel(user, tafel):
     print_function(f"plot_evolution_per_tafel(user={user}, tafel={tafel})")
@@ -859,7 +912,7 @@ def score_per_set(df_scores):
     print_function("score_per_set(df_scores)")
     df_scores["SCORE"] = df_scores["SCORE"].apply(lambda d: 0 if d<1 else d)
     df_out = (df_scores
-     .groupby(["DATE_START","TIME_START","TAFELS_IN_OEF","DIFFICULTY_LEVEL"])
+     .groupby(["DATE_START","TIME_START","TAFELS_IN_OEF","DIFFICULTY_LEVEL","TYPE_EXERCISE"], as_index=False)
      .agg(AANTAL_OEFENINGEN=("EXERCISE_IDX","count"), SCORE=("SCORE","sum"), TIJD=("DURATION_TIME","sum"))
      .assign(TIJD=lambda x: x["TIJD"].apply(lambda d: translate_sec_to_min_sec(d)))
      .sort_values(by=["DATE_START","TIME_START"], ascending=[False,False])
@@ -883,6 +936,7 @@ def reset_exercises():
 
     new_user  = st.session_state.get("pending_user", st.session_state.user)
     new_level = st.session_state.get("pending_difficulty_level", st.session_state.difficulty_level)
+    new_type = st.session_state.get("pending_type", st.session_state.type_exercise)
     new_tables = list(pending_tables)
     new_n = int(st.session_state.get("pending_n_exercises", st.session_state.n_exercises))
     new_n = max(1, min(50, new_n))
@@ -893,6 +947,7 @@ def reset_exercises():
         and new_level == st.session_state.difficulty_level
         and new_tables == st.session_state.selected_tables
         and new_n == st.session_state.n_exercises
+        and new_type == st.session_state.type_exercise
     ):
         return
 
@@ -901,6 +956,7 @@ def reset_exercises():
     st.session_state.difficulty_level = new_level
     st.session_state.selected_tables = new_tables
     st.session_state.n_exercises = new_n
+    st.session_state.type_exercise = new_type
 
     # ---- your side effects (unchanged from your function) ----
     reset_progress(st.session_state.n_exercises)
@@ -913,6 +969,7 @@ def reset_exercises():
         st.session_state.selected_tables,
         st.session_state.difficulty_level,
         0,
+        st.session_state.type_exercise,
     )
     st.session_state.last_result = None
     st.session_state.prev_exercise = None
@@ -923,8 +980,8 @@ def reset_exercises():
     # No st.rerun(): Streamlit reruns automatically after on_change.
 
 
-def plot_progress(displaytype='SCORE'):
-    df = read_score_df(user=st.session_state.user)
+def plot_progress(df, displaytype='SCORE'):
+    # df = read_score_df(user=st.session_state.user)
     df_plot = (
         df
         .assign(SCORE=lambda x: x["SCORE"].mask(x["SCORE"] < 1, 0))

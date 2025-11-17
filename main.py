@@ -5,12 +5,76 @@ from datetime import timedelta
 from functions import *
 import math
 from time import time
+from streamlit_modal import Modal
+import extra_streamlit_components as stx
 
 
 DATA_PATH = "data"
 SCORE_FILE = os.path.join(DATA_PATH, "scores.csv")
 
-# (1) INITIALIZE DEFAULTS ----
+url = st.secrets["SUPABASE_URL"]
+key = st.secrets["SUPABASE_ANON_KEY"]
+supabase = create_client(url, key)
+
+# (0.0) POPUP LOGIN SCREEN ----
+
+
+# # --- CONFIG ---
+# st.set_page_config(page_title="Auth Modal Demo")
+
+# # --- STATE ---
+# if "loggedin_user" not in st.session_state:
+#     st.session_state.loggedin_user = None
+# if "auth_modal_open" not in st.session_state:
+#     st.session_state.auth_modal_open = st.session_state.loggedin_user is None
+
+# # --- MODAL ---
+# modal = Modal(
+#     "Login / Sign Up",
+#     key="auth_modal",
+#     max_width=500,          # optional
+#     padding=20             # optional
+# )
+
+# # Keep opening on every rerun while not logged in
+# if st.session_state.auth_modal_open:
+#     modal.open()
+
+# # Render contents only when open
+# if modal.is_open():
+#     with modal.container():
+#         st.write("Please log in to continue.")
+#         email = st.text_input("Email", key="login_email")
+#         password = st.text_input("Password", type="password", key="login_password")
+#         col1, col2 = st.columns(2)
+#         with col1:
+#             submit = st.button("Submit", key="login_submit")
+#         with col2:
+#             cancel = st.button("Cancel", key="login_cancel")
+
+#         # Replace this block with your Supabase auth call
+#         if submit:
+#             if email and password:
+#                 st.session_state.loggedin_user = {"email": email}
+#                 st.session_state.auth_modal_open = False
+#                 st.rerun()  # on older Streamlit, use st.experimental_rerun()
+#             else:
+#                 st.error("Enter email and password.")
+#         if cancel:
+#             # keep it open unless you explicitly allow guests
+#             st.warning("Login required.")
+
+# # --- APP CONTENT ---
+# st.write("App content is visible, but modal will block interaction until login.")
+# if st.session_state.loggedin_user:
+#     st.success(f"Logged in as {st.session_state.loggedin_user['email']}")
+#     if st.button("Logout", key="logout"):
+#         st.session_state.loggedin_user = None
+#         st.session_state.auth_modal_open = True
+#         st.rerun()
+
+
+# (0.1) INITIALIZE DEFAULTS ----
 
 init_session_state(generate_exercise, reset_progress)
 
@@ -23,7 +87,7 @@ if st.session_state.reset_answer:
     st.session_state.reset_answer = False
 
 
-# (2) LAYOUT MAIN BODY ----
+# (0.3) LAYOUT MAIN BODY ----
 
 # Header section above tabs
 pokemon_header = st.empty()
@@ -63,7 +127,7 @@ render_pokemon_header(pokemon_header, st.session_state.pokemon)
 tabs = st.tabs(["Oefeningen", "Level","Stats"])
 tab_oef, tab_level, tab_stats = tabs
 
-# (A) TAB - OEFENINGEN ----
+# (2) TAB - OEFENINGEN ----
 
 with tab_oef:
     # Oefeningen tab: the main exercises UI continues below
@@ -135,7 +199,7 @@ with tab_oef:
                     st.session_state.correct,
                     st.session_state.x1,
                     st.session_state.x2,
-                ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, st.session_state.exercise_counter)
+                ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, st.session_state.exercise_counter,st.session_state.type_exercise)
                 # schedule clearing input on next run (don't touch the key now)
                 st.session_state.reset_answer = True
                 st.rerun()
@@ -149,7 +213,7 @@ with tab_oef:
 
     # (2.6) When finished ----
     if st.session_state.exercise_counter == st.session_state.n_exercises:
-        print_white("Set done!")
+        print_title("SET DONE!")
         st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
         st.session_state.status = 0
         st.session_state.last_result = None
@@ -197,11 +261,13 @@ with tab_oef:
     if st.session_state.last_result is not None:
         st.write(f"Je deed er {st.session_state.duration_time:.0f} seconden over.")
 
-# (B) TAB - STATS ----
+# (3) TAB - STATS ----
 
 with tab_stats:
     st.header(f"Statistieken voor {st.session_state.user}")
     df_scores = read_score_df(st.session_state.user)
+    df_scores_vermenigvuldiging = df_scores.query("TYPE_EXERCISE == 'vermenigvuldiging'")
+    
     if df_scores.empty:
         st.info("Geen statistieken beschikbaar.")
     else:
@@ -217,7 +283,7 @@ with tab_stats:
 
         st.subheader("Prestaties per tafel")
         tafel_stats = (
-            df_scores.groupby("TAFEL")
+            df_scores.groupby(["TAFEL","TYPE_EXERCISE"], as_index=False)
             .agg(
                 **{
                     "Percentage juist": (
@@ -228,8 +294,8 @@ with tab_stats:
                 }
             )
             .reset_index()
-            .rename(columns={"TAFEL": "Tafel"})
-            .sort_values(by="Tafel", ascending=True)
+            .rename(columns={"TAFEL": "Tafel","TYPE_EXERCISE":"Type oefening"})
+            .sort_values(by=["Type oefening","Tafel"], ascending=True)
         )
 
         # display table but dont display index
@@ -239,6 +305,7 @@ with tab_stats:
             width="stretch",
             column_config={
                 "Tafel": st.column_config.TextColumn(width="small"),
+                "Type oefening": st.column_config.TextColumn(width="medium"),
                 "Percentage juist": st.column_config.TextColumn(width="medium"),
                 "Aantal pogingen": st.column_config.TextColumn(width="medium"),
             },
@@ -254,7 +321,7 @@ with tab_stats:
         
 
         st.subheader("Kans dat een bepaalde tafel wordt gekozen")
-        prob_table = generate_prob_table(df_scores)
+        prob_table = generate_prob_table(df_scores_vermenigvuldiging)
         st.dataframe(
             prob_table,
             hide_index=True,
@@ -266,7 +333,7 @@ with tab_stats:
         )
 
         st.subheader("Gemiddeld aantal seconden per tafel")
-        time_table = generate_duration_table(df_scores)
+        time_table = generate_duration_table(df_scores_vermenigvuldiging)
         st.dataframe(
             time_table,
             hide_index=True,
@@ -278,7 +345,7 @@ with tab_stats:
         )
 
         st.subheader("Gemiddelde score per tafel")
-        score_table = generate_score_table(df_scores)
+        score_table = generate_score_table(df_scores_vermenigvuldiging)
         st.dataframe(
             score_table,
             hide_index=True,
@@ -290,11 +357,11 @@ with tab_stats:
         )
 
         st.subheader("Evolutie score per tafel")
-        plot = plot_progress(displaytype='SCORE')
+        plot = plot_progress(df_scores_vermenigvuldiging, displaytype='SCORE')
         st.plotly_chart(plot)
         st.subheader("Evolutie tijd per tafel")
 
-        plot = plot_progress(displaytype='DURATION_TIME')
+        plot = plot_progress(df_scores_vermenigvuldiging, displaytype='DURATION_TIME')
         st.plotly_chart(plot)
 
         st.subheader("Recente gedetailleerde resultaten")
@@ -318,7 +385,7 @@ with tab_stats:
             hide_index=True,
         )
         
-# (3) TAB - LEVEL ----
+# (4) TAB - LEVEL ----
 with tab_level:
     st.header(f"Level van {st.session_state.user}")
     df_scores = read_score_df(user=st.session_state.user)
@@ -347,10 +414,10 @@ with tab_level:
         )
 
 
-# (4) SIDEBAR ----
+# (5) SIDEBAR ----
 
-# ---------- pending values (owned by widgets) ----------
-# Initialize pending values only if they don't exist
+print_white("Rendering sidebar...")
+
 if "pending_user" not in st.session_state:
     st.session_state.pending_user = st.session_state.user
 if "pending_difficulty_level" not in st.session_state:
@@ -359,6 +426,8 @@ if "pending_selected_tables" not in st.session_state:
     st.session_state.pending_selected_tables = st.session_state.selected_tables
 if "pending_n_exercises" not in st.session_state:
     st.session_state.pending_n_exercises = st.session_state.n_exercises
+if "pending_type" not in st.session_state:
+    st.session_state.pending_type = st.session_state.type_exercise
 
 USERS  = ["Raphael", "Mama", "Papa", "Lea"]
 DIFFS  = ["Makkelijk", "Middelmatig", "Moeilijk"]
@@ -366,7 +435,6 @@ TABLES = [2, 3, 4, 5, 6, 7, 8, 9]
 
 st.sidebar.title("Instellingen")
 
-# --------- NO FORM. Each widget triggers reset_exercises on change ----------
 st.sidebar.selectbox(
     "Kies de gebruiker:",
     options=USERS,
@@ -375,11 +443,20 @@ st.sidebar.selectbox(
 )
 
 st.sidebar.selectbox(
-    "Kies niveau van moeilijkheid:",
-    options=DIFFS,
-    key="pending_difficulty_level",
+    "Kies type van oefening:",
+    options=["vermenigvuldiging","deling"],
+    key="pending_type",
     on_change=reset_exercises,
 )
+
+if st.session_state.pending_type == "vermenigvuldiging":
+    st.sidebar.selectbox(
+        "Kies niveau van moeilijkheid:",
+        options=DIFFS,
+        key="pending_difficulty_level",
+        on_change=reset_exercises,
+    )
+
 
 st.sidebar.multiselect(
     "Kies de tafel(s) die je wil oefenen:",
@@ -396,4 +473,6 @@ st.sidebar.number_input(
     key="pending_n_exercises",
     on_change=reset_exercises,
 )
+
+print_white("Sidebar rendered.")
 
