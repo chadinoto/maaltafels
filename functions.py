@@ -668,6 +668,7 @@ def generate_level_chart(df_scores, user=None):
     # 17	Jolteon	Electric	55
     # 18	Snorlax	Normal	52
     # 19	Lapras	Water / Ice	50
+    #  19	Lapras	Water / Ice	50
     # 20	Pikachu	Electric	45
     
     level_info = get_level_info()
@@ -709,7 +710,7 @@ def calculate_level():
         level_10 = False; level_11 = False; level_12 = False; level_13 = False; level_14 = False; level_15 = False; level_16 = False; level_17 = False; level_18 = False;
         level_19 = False; level_20 = False; level_21 = False; level_22 = False; level_23 = False; level_24 = False; level_25 = False; level_26 = False; level_27 = False;
         level_28 = False; level_29 = False; level_30 = False; level_31 = False; level_32 = False; level_33 = False; level_34 = False; level_35 = False; level_36 = False; level_37 = False;
-        level_38 = False; level_39 = False; level_40 = False;level_39 = False; level_40 = False;level_41 = False; level_42 = False; level_43 = False
+        level_38 = False; level_39 = False; level_40 = False;level_39 = False; level_40 = False;level_41 = False; level_42 = False; level_43 = False; level_44 = False; level_45 = False; level_46 = False; level_47 = False
     else:
         
         df_tmp = (df 
@@ -772,9 +773,15 @@ def calculate_level():
         level_40 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90")) > 0
         level_41 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=75")) > 0
         level_42 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=60")) > 0
-
+        
+        # veel oefeningen in korte tijd
+        level_43 = len(df_tmp.query("N_EXERCISES>=40 and TOTAL_SCORE>=40 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=180")) > 0
+        level_44 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=300")) > 0
+        level_45 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=200")) > 0
+        level_46 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=150")) > 0
+        
         # arceus 
-        level_43 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
+        level_47 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
 
     return {
         0: level_0,
@@ -821,6 +828,10 @@ def calculate_level():
         41: level_41,
         42: level_42,
         43: level_43,
+        44: level_44,
+        45: level_45,
+        46: level_46,
+        47: level_47,
     }
 
 def get_all_pokemons():
@@ -889,6 +900,7 @@ def get_level_info():
         0: (0, 0, "Beginner: Geen oefeningen voltooid", "Magikarp", "Zwakke vis-Pokémon die bijna niets kan, maar evolueert in de machtige Gyarados."),
         1: (1, 45, "Tafel van 2: 20 oefeningen juist in 2 minuten", "Pikachu", "Bekende mascotte van Pokémon; gebruikt elektrische aanvallen zoals Thunderbolt."),
         2: (2, 50, "Tafel van 3: 20 oefeningen juist in 2 minuten", "Lapras", "Zachtaardige zeepokémon die mensen vaak over zee vervoert."),
+        2: (2, 50, "Tafel van 3: 20 oefeningen juist in 2 minuten", "Lapras", "Zachtaardige zeepokémon die mensen vaak over zee vervoe5t."),
         3: (3, 52, "Tafel van 4: 20 oefeningen juist in 2 minuten", "Snorlax", "Grote, luie Pokémon die meestal slaapt maar enorm sterk is."),
         4: (4, 55, "Tafel van 5: 20 oefeningen juist in 2 minuten", "Jolteon", "Snel en dodelijk elektrisch type met razendsnelle aanvallen."),
         5: (5, 58, "Tafel van 6: 20 oefeningen juist in 2 minuten", "Machamp", "Vierarmige vechter met brute fysieke kracht en hoge aanval."),
@@ -930,9 +942,33 @@ def get_level_info():
         40: (40, 124, "Deling van alle tafels: 20 oefeningen juist in 1 minuut en 30 seconden", "Roserade", "Giftige rozen die verrassend hard toeslaan."),
         41: (41, 126, "Deling van alle tafels: 20 oefeningen juist in 1 minuut en 15 seconden", "Ninetales", "IJs/fee Pokémon met sierlijke maar gevaarlijke aanvallen."),
         42: (42, 128, "Deling van alle tafels: 20 oefeningen juist in 1 minuut", "Dragapult", "Supersnelle draak/spook Pokémon die Dreepies als projectielen lanceert."),
+        
+         # veel oefeningen in korte tijd
+        # level_43 = len(df_tmp.query("N_EXERCISES>=40 and TOTAL_SCORE>=40 andLEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=180")) > 0
+        # level_44 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 andLEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=300")) > 0
+        # level_45 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 andLEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=200")) > 0
+        # level_46 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 andLEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=150")) > 0
+       
+        
+        # veel oefeningen in korte tijd
+        43: (43, 140, "Alle tafels tot 9: 40 oefeningen juist in 3 minuten",
+             "Dragonite", 
+             "Vriendelijke draak met enorme kracht en hoge snelheid."),
+
+        44: (44, 160, "Alle tafels tot 9: 50 oefeningen juist in 5 minuten", 
+             "Garchomp", 
+             "Supersnelle draak/grond Pokémon die razendsnel toeslaat."),
+
+        45: (45, 180, "Alle tafels tot 9: 50 oefeningen juist in 3 minuten en 20 seconden", 
+             "Togekiss", 
+             "Fee/vlieg Pokémon die krachtige stralingsaanvallen gebruikt."),
+
+        46: (46, 200, "Alle tafels tot 9: 50 oefeningen juist in 2 minuten en 30 seconden", 
+             "Metagross", 
+             "Staal/psychisch Pokémon met enorme rekenkracht en sterkte."),
 
         # Arceus verplaatst naar 43
-        43: (43, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
+        47: (47, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
 
     return level_info
@@ -1036,6 +1072,7 @@ def reset_exercises():
     new_tables = list(pending_tables)
     new_n = int(st.session_state.get("pending_n_exercises", st.session_state.n_exercises))
     new_n = max(1, min(50, new_n))
+    new_5 = max(1, min(50, new_n))
 
     # Skip heavy work when nothing changed
     if (
