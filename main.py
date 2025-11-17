@@ -16,6 +16,24 @@ url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_ANON_KEY"]
 supabase = create_client(url, key)
 
+st.markdown(
+    """
+    <style>
+        .stMainBlockContainer {
+            max-width: 1000px; /* your custom width */
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+        .e1mlolmg0 {
+            height: 30px !important;
+            min-height: 30px !important;
+            line-height: 30px !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # (0.0) POPUP LOGIN SCREEN ----
 
 
@@ -92,44 +110,40 @@ if st.session_state.reset_answer:
 # Header section above tabs
 pokemon_header = st.empty()
 
-def render_pokemon_header(target, pokemon_list):
-    with target.container():
-        st.write("Jouw verzamelde Pokemons:")
-        if pokemon_list:
-            pokemon_per_row = 10
-            for i in range(0, len(pokemon_list), pokemon_per_row):
-                cols = st.columns(pokemon_per_row)
-                for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
-                    with cols[j]:
-                        if pokemon != "Giratina":
-                            # small font caption
-                            st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
-                            st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
-                        else: 
-                            st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
-                            st.image(f"https://img.pokemondb.net/artwork/large/giratina-altered.jpg", width=70)
-
-            st.markdown(
-                """
-                <style>
-                img {
-                border: 2px solid #ccc;
-                border-radius: 8px;
-                }
-                </style>
-                """,
-                unsafe_allow_html=True
-            )
-
-# Initial render
+# target = st.container()
 render_pokemon_header(pokemon_header, st.session_state.pokemon)
 
-tabs = st.tabs(["Oefeningen", "Level","Stats"])
-tab_oef, tab_level, tab_stats = tabs
+# st.write(f"Refresh pokemon grid: {st.session_state.render_pokemon}")
+
+# if st.button("Refresh Pokémon Grid"):
+#     st.session_state.render_pokemon = True
+
+# if st.session_state.render_pokemon:
+#     render_pokemon_header(pokemon_header, st.session_state.pokemon)
+#     # freeze until next manual refresh
+    
+#     st.session_state.render_pokemon = False
+    
+# Initial render
+# render_pokemon_header(pokemon_header, st.session_state.pokemon)
+
+# tabs = st.tabs(["Oefeningen", "Level","Stats"])
+# tab_oef, tab_level, tab_stats = tabs
+
+
+chosen_id = stx.tab_bar(data=[
+    stx.TabBarItemData(id=1, title="Oefeningen", description=""),
+    stx.TabBarItemData(id=2, title="Level", description=""),
+    stx.TabBarItemData(id=3, title="Stats", description=""),
+], default=1)
+st.markdown("<hr style='margin:0;border:none;border-top:1px solid red;' />", unsafe_allow_html=True)
+
+# st.info(f"{chosen_id=}")
 
 # (2) TAB - OEFENINGEN ----
 
-with tab_oef:
+# with tab_oef:
+if chosen_id == '1':
     # Oefeningen tab: the main exercises UI continues below
     st.subheader(f"Hallo {st.session_state.user}, klaar voor de maaltafels?")
     # (2.1) Start button ----
@@ -145,6 +159,7 @@ with tab_oef:
 
     # (2.2) Oefening generate ----
     if st.session_state.status and st.session_state.exercise_counter < st.session_state.n_exercises:
+        print_red("DISPLAYING NOW")
         st.write(f"Volgende oefening: **{st.session_state.exercise}**")
 
         # (2.3) Antwoord capture ----
@@ -263,7 +278,10 @@ with tab_oef:
 
 # (3) TAB - STATS ----
 
-with tab_stats:
+# with tab_stats:
+
+if chosen_id == '3':
+
     st.header(f"Statistieken voor {st.session_state.user}")
     df_scores = read_score_df(st.session_state.user)
     df_scores_vermenigvuldiging = df_scores.query("TYPE_EXERCISE == 'vermenigvuldiging'")
@@ -386,7 +404,10 @@ with tab_stats:
         )
         
 # (4) TAB - LEVEL ----
-with tab_level:
+# with tab_level:
+
+if chosen_id == '2':
+
     st.header(f"Level van {st.session_state.user}")
     df_scores = read_score_df(user=st.session_state.user)
     if df_scores.empty:

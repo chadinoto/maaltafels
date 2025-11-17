@@ -187,6 +187,7 @@ def generate_exercise(accepted_products, level, exercise_idx, type):
         correct_answer = random_number * random_accepted_product
 
         exercise_string = f"{random_number} x {random_accepted_product}"
+        print_white(exercise_string)
 
         return exercise_string, correct_answer, random_accepted_product, random_number
 
@@ -202,8 +203,8 @@ def generate_exercise(accepted_products, level, exercise_idx, type):
         
         correct_answer = random_number
         
-        exercise_string = f"{quotient} / {random_accepted_product}"
-
+        exercise_string = f"{quotient} : {random_accepted_product}"
+        print_white(exercise_string)
         return exercise_string, correct_answer, random_accepted_product, quotient
 
 
@@ -367,7 +368,7 @@ def update_progress(exercise_counter, answer_type):
 
 def restart():
     print_function("restart()")
-    st.session_state.pokemon = get_all_pokemons()
+    # st.session_state.pokemon = get_all_pokemons()
     st.session_state.round_active = True
     st.session_state.round_count = 0
     st.session_state.score = 0
@@ -382,6 +383,8 @@ def restart():
     ) = generate_exercise(st.session_state.selected_tables, st.session_state.difficulty_level, 0, st.session_state.type_exercise)
     st.session_state.exercise_counter = 0
     st.session_state.last_result = None
+    st.session_state.render_pokemon = True # reset pokemon header when user has changed anhything in instellingen
+
     st.rerun()
     render_progress()
 
@@ -406,6 +409,7 @@ def init_session_state(generate_exercise, reset_progress):
         "pokemon": ["Magikarp"],
         "df_scores": pd.DataFrame(),
         "type_exercise": "vermenigvuldiging",
+        "render_pokemon": True,
     }
 
     for key, val in defaults.items():
@@ -413,6 +417,9 @@ def init_session_state(generate_exercise, reset_progress):
             st.session_state[key] = val
             if key == "df_scores":
                 st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
+                st.session_state.pokemon = get_all_pokemons()
+        
+
 
     # dependent inits
     if "progress" not in st.session_state:
@@ -428,8 +435,10 @@ def init_session_state(generate_exercise, reset_progress):
         st.session_state.last_result = None
         st.session_state.prev_exercise = None
         st.session_state.prev_correct = None
-        
-    st.session_state.pokemon = get_all_pokemons()
+
+
+
+    # st.session_state.pokemon = get_all_pokemons()
 
 # (5) STATS
 
@@ -795,6 +804,37 @@ def get_all_pokemons():
 
     return pokemon_list
 
+
+@st.fragment
+def render_pokemon_header(target, pokemon_list):
+    with target.container():
+        st.write("Jouw verzamelde Pokemons:")
+        if pokemon_list:
+            pokemon_per_row = 13
+            for i in range(0, len(pokemon_list), pokemon_per_row):
+                cols = st.columns(pokemon_per_row)
+                for j, pokemon in enumerate(pokemon_list[i:i+pokemon_per_row]):
+                    with cols[j]:
+                        if pokemon != "Giratina":
+                            # small font caption
+                            st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
+                            st.image(f"https://img.pokemondb.net/artwork/large/{pokemon.lower()}.jpg", width=70)
+                        else: 
+                            st.markdown(f"<div style='font-size: 8px;'>{pokemon}</div>", unsafe_allow_html=True)
+                            st.image(f"https://img.pokemondb.net/artwork/large/giratina-altered.jpg", width=70)
+
+            st.markdown(
+                """
+                <style>
+                img {
+                border: 2px solid #ccc;
+                border-radius: 8px;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+
 def get_pokemon_hover_text(pokemon):
     level_info = get_level_info()
     # get row where pokemon matches
@@ -929,6 +969,7 @@ def translate_sec_to_min_sec(seconds):
 def reset_exercises():
     print_title("Settings changed")
     print_function("Reset_exercises()")
+
     pending_tables = st.session_state.get("pending_selected_tables", [])
     if not pending_tables:
         st.warning("Kies minstens één tafel.")
@@ -957,6 +998,7 @@ def reset_exercises():
     st.session_state.selected_tables = new_tables
     st.session_state.n_exercises = new_n
     st.session_state.type_exercise = new_type
+    st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
 
     # ---- your side effects (unchanged from your function) ----
     reset_progress(st.session_state.n_exercises)
@@ -975,8 +1017,15 @@ def reset_exercises():
     st.session_state.prev_exercise = None
     st.session_state.prev_correct = None
     st.session_state.reset_answer = True
+    print_red(f"st.session_state.user: {st.session_state.user}")
+
     st.session_state.pokemon = get_all_pokemons()
     st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
+    
+    
+    st.session_state.render_pokemon = True # reset pokemon header when user has changed anhything in instellingen
+    
+    render_pokemon_header(st.empty(),st.session_state.pokemon)
     # No st.rerun(): Streamlit reruns automatically after on_change.
 
 
