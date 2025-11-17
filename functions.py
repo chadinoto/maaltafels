@@ -967,7 +967,7 @@ def get_level_info():
              "Metagross", 
              "Staal/psychisch Pokémon met enorme rekenkracht en sterkte."),
 
-        # Arceus verplaatst naar 43
+        # Arceus verplaatst naar 43 
         47: (47, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
 
