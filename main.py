@@ -5,7 +5,7 @@ from datetime import timedelta
 from functions import *
 import math
 from time import time
-from streamlit_modal import Modal
+# from streamlit_modal import Modal
 import extra_streamlit_components as stx
 
 
