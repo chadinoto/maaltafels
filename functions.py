@@ -773,7 +773,7 @@ def calculate_level():
         level_41 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=75")) > 0
         level_42 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=60")) > 0
 
-        # arceus
+        # arceus 
         level_43 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
 
     return {
