@@ -1023,9 +1023,9 @@ def reset_exercises():
     st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
     
     
-    st.session_state.render_pokemon = True # reset pokemon header when user has changed anhything in instellingen
+    # st.session_state.render_pokemon = True # reset pokemon header when user has changed anhything in instellingen
     
-    render_pokemon_header(st.empty(),st.session_state.pokemon)
+    # render_pokemon_header(st.empty(),st.session_state.pokemon)
     # No st.rerun(): Streamlit reruns automatically after on_change.
 
 

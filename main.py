@@ -159,7 +159,6 @@ if chosen_id == '1':
 
     # (2.2) Oefening generate ----
     if st.session_state.status and st.session_state.exercise_counter < st.session_state.n_exercises:
-        print_red("DISPLAYING NOW")
         st.write(f"Volgende oefening: **{st.session_state.exercise}**")
 
         # (2.3) Antwoord capture ----
