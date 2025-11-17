@@ -708,22 +708,25 @@ def calculate_level():
         level_1 = False; level_2 = False; level_3 = False; level_4 = False; level_5 = False; level_6 = False; level_7 = False; level_8 = False; level_9 = False;
         level_10 = False; level_11 = False; level_12 = False; level_13 = False; level_14 = False; level_15 = False; level_16 = False; level_17 = False; level_18 = False;
         level_19 = False; level_20 = False; level_21 = False; level_22 = False; level_23 = False; level_24 = False; level_25 = False; level_26 = False; level_27 = False;
-        level_28 = False
+        level_28 = False; level_29 = False; level_30 = False; level_31 = False; level_32 = False; level_33 = False; level_34 = False; level_35 = False; level_36 = False; level_37 = False;
+        level_38 = False; level_39 = False; level_40 = False;level_39 = False; level_40 = False;level_41 = False; level_42 = False; level_43 = False
     else:
         
         df_tmp = (df 
-            .groupby(["DATETIME_START","DIFFICULTY_LEVEL","TAFELS_IN_OEF"], as_index=False)
+            .groupby(["DATETIME_START","DIFFICULTY_LEVEL","TAFELS_IN_OEF","TYPE_EXERCISE"], as_index=False)
             .agg(N_EXERCISES=("EXERCISE_IDX", "count"), TOTAL_SCORE=("SCORE", "sum"), TOTAL_MINUTES=("DURATION_TIME", "sum"))
-            .query("N_EXERCISES>=20 and TOTAL_SCORE>=20 and DIFFICULTY_LEVEL!='Makkelijk' and TOTAL_MINUTES<=120")
+            .query("N_EXERCISES>=20 and TOTAL_SCORE>=20 and DIFFICULTY_LEVEL!='Makkelijk' and TOTAL_MINUTES<=120 and TYPE_EXERCISE=='vermenigvuldiging'")
             )
         
         df_tmp["LEN_TAFELS_IN_OEF"] = df_tmp["TAFELS_IN_OEF"].apply(lambda x: len(x.split(",")))
-
-        # 23: (23, 94, "Tafel van 6: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Zacian","Legendarische zwaard-Pokémon die ongekende aanvalskracht bezit en moeiteloos draken kan verslaan."),
-        # 24: (24, 95, "Tafel van 7: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Eternatus","Reusachtige Pokémon van buiten de wereld, bron van oneindige energie en Dynamax-kracht."),
-        # 25: (25, 96, "Tafel van 8: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Lugia","Bewaker van de zeeën, met vleugels die stormen kunnen kalmeren of ontketenen."),
-        # 26: (26, 97, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Giratina","Heerser van de omgekeerde wereld, die balans houdt tussen leven en dood."),
-        # 27: (27, 98, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 15 seconden", "Ho-Oh","Mythische regenboogvogel die geluk brengt en herboren zielen tot leven wekt."),
+        
+        df_tmp_deling = (df 
+            .groupby(["DATETIME_START","DIFFICULTY_LEVEL","TAFELS_IN_OEF","TYPE_EXERCISE"], as_index=False)
+            .agg(N_EXERCISES=("EXERCISE_IDX", "count"), TOTAL_SCORE=("SCORE", "sum"), TOTAL_MINUTES=("DURATION_TIME", "sum"))
+            .query("N_EXERCISES>=20 and TOTAL_SCORE>=20 and TOTAL_MINUTES<=120 and TYPE_EXERCISE=='deling'")
+            )
+        
+        df_tmp_deling["LEN_TAFELS_IN_OEF"] = df_tmp_deling["TAFELS_IN_OEF"].apply(lambda x: len(x.split(",")))
 
         level_1 = len(df_tmp.query("TAFELS_IN_OEF=='2'")) > 0
         level_2 = len(df_tmp.query("TAFELS_IN_OEF=='3'")) > 0
@@ -752,7 +755,26 @@ def calculate_level():
         level_25 = len(df_tmp.query("TAFELS_IN_OEF=='8' and TOTAL_MINUTES<=90 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
         level_26 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
         level_27 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=75 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
-        level_28 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
+        
+        # delingen
+        level_28 = len(df_tmp_deling.query("TAFELS_IN_OEF=='2'")) > 0
+        level_29 = len(df_tmp_deling.query("TAFELS_IN_OEF=='3'")) > 0
+        level_30 = len(df_tmp_deling.query("TAFELS_IN_OEF=='4'")) > 0
+        level_31 = len(df_tmp_deling.query("TAFELS_IN_OEF=='5'")) > 0
+        level_32 = len(df_tmp_deling.query("TAFELS_IN_OEF=='6'")) > 0
+        level_33 = len(df_tmp_deling.query("TAFELS_IN_OEF=='7'")) > 0
+        level_34 = len(df_tmp_deling.query("TAFELS_IN_OEF=='8'")) > 0
+        level_35 = len(df_tmp_deling.query("TAFELS_IN_OEF=='9'")) > 0
+        level_36 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF>=3")) > 0
+        level_37 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF>=5")) > 0
+        level_38 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8")) > 0
+        level_39 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=105")) > 0
+        level_40 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90")) > 0
+        level_41 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=75")) > 0
+        level_42 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=60")) > 0
+
+        # arceus
+        level_43 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
 
     return {
         0: level_0,
@@ -783,7 +805,22 @@ def calculate_level():
         25: level_25,
         26: level_26,
         27: level_27,
-        28: level_28
+        28: level_28,
+        29: level_29,
+        30: level_30,
+        31: level_31,
+        32: level_32,
+        33: level_33,
+        34: level_34,
+        35: level_35,
+        36: level_36,
+        37: level_37,
+        38: level_38,
+        39: level_39,
+        40: level_40,
+        41: level_41,
+        42: level_42,
+        43: level_43,
     }
 
 def get_all_pokemons():
@@ -877,7 +914,25 @@ def get_level_info():
         25: (25, 96, "Tafel van 8: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Lugia","Bewaker van de zeeën, met vleugels die stormen kunnen kalmeren of ontketenen."),
         26: (26, 97, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 30 seconden", "Giratina","Heerser van de omgekeerde wereld, die balans houdt tussen leven en dood."),
         27: (27, 98, "Alle tafels tot 9: 20 moeilijke oefeningen juist in 1 minuut en 15 seconden", "Ho-Oh","Mythische regenboogvogel die geluk brengt en herboren zielen tot leven wekt."),
-        28: (28, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
+        # 15 nieuwe pokémon — allemaal minder krachtig dan Arceus
+        28: (28, 100, "Deling van 2: 20 oefeningen juist in 2 minuten", "Blaziken", "Vuur/Vecht Pokémon die bekendstaat om zijn snelheid en krachtige kicks."),
+        29: (29, 102, "Deling van 3: 20 oefeningen juist in 2 minuten", "Infernape", "Razendsnelle vechter die fysieke en speciale aanvallen combineert."),
+        30: (30, 104, "Deling van 4: 20 oefeningen juist in 2 minuten", "Swampert", "Water/Aarde Pokémon die sterk is tegen vele types."),
+        31: (31, 106, "Deling van 5: 20 oefeningen juist in 2 minuten", "Sceptile", "Supersnelle gras-Pokémon die vlijmscherpe bladeren gebruikt."),
+        32: (32, 108, "Deling van 6: 20 oefeningen juist in 2 minuten", "Aegislash", "Zwaard/Pantserschild Pokémon die tussen aanval en verdediging wisselt."),
+        33: (33, 110, "Deling van 7: 20 oefeningen juist in 2 minuten", "Goodra", "Lieve maar taaie draak met enorme speciale verdediging."),
+        34: (34, 112, "Deling van 8: 20 oefeningen juist in 2 minuten", "Volcarona", "Vuur/BUG Pokémon die vlammenscènes kan creëren met zijn vleugels."),
+        35: (35, 114, "Deling van 9: 20 oefeningen juist in 2 minuten", "Milotic", "Elegante water-Pokémon met sterke verdediging en charme."),
+        36: (36, 116, "Deling van 3 verschillende tafels: 20 oefeningen juist in 2 minuten", "Haxorus", "Bijtende draak met brute fysieke kracht."),
+        37: (37, 118, "Deling van 5 verschillende tafels: 20 oefeningen juist in 2 minuten", "Weavile", "Slijmsnelle ijs/donker Pokémon die scherpe klauwen gebruikt."),
+        38: (38, 120, "Deling van alle tafels: 20 oefeningen juist in 2 minuten", "Excadrill", "Metaalmol met enorme aanvalskracht onder de grond."),
+        39: (39, 122, "Deling van alle tafels: 20 oefeningen juist in 1 minuut en 45 seconden", "Gliscor", "Vliegende schorpioen met hoge mobiliteit en taaiheid."),
+        40: (40, 124, "Deling van alle tafels: 20 oefeningen juist in 1 minuut en 30 seconden", "Roserade", "Giftige rozen die verrassend hard toeslaan."),
+        41: (41, 126, "Deling van alle tafels: 20 oefeningen juist in 1 minuut en 15 seconden", "Ninetales", "IJs/fee Pokémon met sierlijke maar gevaarlijke aanvallen."),
+        42: (42, 128, "Deling van alle tafels: 20 oefeningen juist in 1 minuut", "Dragapult", "Supersnelle draak/spook Pokémon die Dreepies als projectielen lanceert."),
+
+        # Arceus verplaatst naar 43
+        43: (43, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
 
     return level_info
