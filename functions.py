@@ -780,7 +780,7 @@ def calculate_level():
         level_45 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=200")) > 0
         level_46 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=150")) > 0
         
-        # arceus 
+        # arceus  
         level_47 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
 
     return {
