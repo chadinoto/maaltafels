@@ -952,20 +952,20 @@ def get_level_info():
         
         # veel oefeningen in korte tijd
         43: (43, 140, "Alle tafels tot 9: 40 oefeningen juist in 3 minuten",
-             "Dragonite", 
-             "Vriendelijke draak met enorme kracht en hoge snelheid."),
+             "Latios", 
+             "Snelle en intelligente draak/Psychic Pokémon die razendsnelle speciale aanvallen gebruikt."),
 
         44: (44, 160, "Alle tafels tot 9: 50 oefeningen juist in 5 minuten", 
-             "Garchomp", 
-             "Supersnelle draak/grond Pokémon die razendsnel toeslaat."),
+             "Latias", 
+             "Elegante draak/Psychic Pokémon met sterke verdediging en beschermende krachten."),
 
         45: (45, 180, "Alle tafels tot 9: 50 oefeningen juist in 3 minuten en 20 seconden", 
-             "Togekiss", 
-             "Fee/vlieg Pokémon die krachtige stralingsaanvallen gebruikt."),
+             "Regigigas", 
+             "Titanische Pokémon met overweldigende fysieke kracht die hele landschappen kan verplaatsen."),
 
         46: (46, 200, "Alle tafels tot 9: 50 oefeningen juist in 2 minuten en 30 seconden", 
-             "Metagross", 
-             "Staal/psychisch Pokémon met enorme rekenkracht en sterkte."),
+             "Necrozma", 
+             "Lichtabsorberende ultra-Pokémon die verwoestende energieaanvallen kan ontketenen."),
 
         # Arceus verplaatst naar 43 
         47: (47, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
