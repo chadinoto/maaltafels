@@ -716,7 +716,7 @@ def calculate_level():
         df_tmp = (df 
             .groupby(["DATETIME_START","DIFFICULTY_LEVEL","TAFELS_IN_OEF","TYPE_EXERCISE"], as_index=False)
             .agg(N_EXERCISES=("EXERCISE_IDX", "count"), TOTAL_SCORE=("SCORE", "sum"), TOTAL_MINUTES=("DURATION_TIME", "sum"))
-            .query("N_EXERCISES>=20 and TOTAL_SCORE>=20 and DIFFICULTY_LEVEL!='Makkelijk' and TOTAL_MINUTES<=120 and TYPE_EXERCISE=='vermenigvuldiging'")
+            .query("N_EXERCISES>=20 and TOTAL_SCORE>=20 and DIFFICULTY_LEVEL!='Makkelijk' and TYPE_EXERCISE=='vermenigvuldiging'")
             )
         
         df_tmp["LEN_TAFELS_IN_OEF"] = df_tmp["TAFELS_IN_OEF"].apply(lambda x: len(x.split(",")))
@@ -729,18 +729,18 @@ def calculate_level():
         
         df_tmp_deling["LEN_TAFELS_IN_OEF"] = df_tmp_deling["TAFELS_IN_OEF"].apply(lambda x: len(x.split(",")))
 
-        level_1 = len(df_tmp.query("TAFELS_IN_OEF=='2'")) > 0
-        level_2 = len(df_tmp.query("TAFELS_IN_OEF=='3'")) > 0
-        level_3 = len(df_tmp.query("TAFELS_IN_OEF=='4'")) > 0
-        level_4 = len(df_tmp.query("TAFELS_IN_OEF=='5'")) > 0
-        level_5 = len(df_tmp.query("TAFELS_IN_OEF=='6'")) > 0
-        level_6 = len(df_tmp.query("TAFELS_IN_OEF=='7'")) > 0
-        level_7 = len(df_tmp.query("TAFELS_IN_OEF=='8'")) > 0
-        level_8 = len(df_tmp.query("TAFELS_IN_OEF=='9'")) > 0
-        level_9 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=2")) > 0
-        level_10 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=3")) > 0
-        level_11 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=5")) > 0
-        level_12 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=7")) > 0
+        level_1 = len(df_tmp.query("TAFELS_IN_OEF=='2' and TOTAL_MINUTES<=120")) > 0
+        level_2 = len(df_tmp.query("TAFELS_IN_OEF=='3' and TOTAL_MINUTES<=120")) > 0
+        level_3 = len(df_tmp.query("TAFELS_IN_OEF=='4' and TOTAL_MINUTES<=120")) > 0
+        level_4 = len(df_tmp.query("TAFELS_IN_OEF=='5' and TOTAL_MINUTES<=120")) > 0
+        level_5 = len(df_tmp.query("TAFELS_IN_OEF=='6' and TOTAL_MINUTES<=120")) > 0
+        level_6 = len(df_tmp.query("TAFELS_IN_OEF=='7' and TOTAL_MINUTES<=120")) > 0
+        level_7 = len(df_tmp.query("TAFELS_IN_OEF=='8' and TOTAL_MINUTES<=120")) > 0
+        level_8 = len(df_tmp.query("TAFELS_IN_OEF=='9' and TOTAL_MINUTES<=120")) > 0
+        level_9 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=2 and TOTAL_MINUTES<=120")) > 0
+        level_10 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=3 and TOTAL_MINUTES<=120")) > 0
+        level_11 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=5 and TOTAL_MINUTES<=120")) > 0
+        level_12 = len(df_tmp.query("LEN_TAFELS_IN_OEF>=7 and TOTAL_MINUTES<=120")) > 0
         level_13 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=120")) > 0
         level_14 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=108")) > 0
         level_15 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90")) > 0
@@ -758,17 +758,17 @@ def calculate_level():
         level_27 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=75 and DIFFICULTY_LEVEL=='Moeilijk'")) > 0
         
         # delingen
-        level_28 = len(df_tmp_deling.query("TAFELS_IN_OEF=='2'")) > 0
-        level_29 = len(df_tmp_deling.query("TAFELS_IN_OEF=='3'")) > 0
-        level_30 = len(df_tmp_deling.query("TAFELS_IN_OEF=='4'")) > 0
-        level_31 = len(df_tmp_deling.query("TAFELS_IN_OEF=='5'")) > 0
-        level_32 = len(df_tmp_deling.query("TAFELS_IN_OEF=='6'")) > 0
-        level_33 = len(df_tmp_deling.query("TAFELS_IN_OEF=='7'")) > 0
-        level_34 = len(df_tmp_deling.query("TAFELS_IN_OEF=='8'")) > 0
-        level_35 = len(df_tmp_deling.query("TAFELS_IN_OEF=='9'")) > 0
-        level_36 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF>=3")) > 0
-        level_37 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF>=5")) > 0
-        level_38 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8")) > 0
+        level_28 = len(df_tmp_deling.query("TAFELS_IN_OEF=='2' and TOTAL_MINUTES<=120")) > 0
+        level_29 = len(df_tmp_deling.query("TAFELS_IN_OEF=='3' and TOTAL_MINUTES<=120")) > 0
+        level_30 = len(df_tmp_deling.query("TAFELS_IN_OEF=='4' and TOTAL_MINUTES<=120")) > 0
+        level_31 = len(df_tmp_deling.query("TAFELS_IN_OEF=='5' and TOTAL_MINUTES<=120")) > 0
+        level_32 = len(df_tmp_deling.query("TAFELS_IN_OEF=='6' and TOTAL_MINUTES<=120")) > 0
+        level_33 = len(df_tmp_deling.query("TAFELS_IN_OEF=='7' and TOTAL_MINUTES<=120")) > 0
+        level_34 = len(df_tmp_deling.query("TAFELS_IN_OEF=='8' and TOTAL_MINUTES<=120")) > 0
+        level_35 = len(df_tmp_deling.query("TAFELS_IN_OEF=='9' and TOTAL_MINUTES<=120")) > 0
+        level_36 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF>=3 and TOTAL_MINUTES<=120")) > 0
+        level_37 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF>=5 and TOTAL_MINUTES<=120")) > 0
+        level_38 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=120")) > 0
         level_39 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=105")) > 0
         level_40 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=90")) > 0
         level_41 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=75")) > 0
