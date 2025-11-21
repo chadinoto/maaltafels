@@ -145,6 +145,7 @@ chosen_id = stx.tab_bar(data=[
 # with tab_oef:
 if chosen_id == '1':
     # Oefeningen tab: the main exercises UI continues below
+    st.write("")
     st.subheader(f"Hallo {st.session_state.user}, klaar voor de maaltafels?")
     # (2.1) Start button ----
     col1, col2 = st.columns([1, 5])
