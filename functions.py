@@ -775,10 +775,10 @@ def calculate_level():
         level_42 = len(df_tmp_deling.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=60")) > 0
         
         # veel oefeningen in korte tijd
-        level_43 = len(df_tmp.query("N_EXERCISES>=40 and TOTAL_SCORE>=40 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=180")) > 0
-        level_44 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=300")) > 0
-        level_45 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=200")) > 0
-        level_46 = len(df_tmp.query("N_EXERCISES>=50 and TOTAL_SCORE>=50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=150")) > 0
+        level_43 = len(df_tmp.query("N_EXERCISES==40 and TOTAL_SCORE==40 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=180")) > 0
+        level_44 = len(df_tmp.query("N_EXERCISES==50 and TOTAL_SCORE==50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=300")) > 0
+        level_45 = len(df_tmp.query("N_EXERCISES==50 and TOTAL_SCORE==50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=200")) > 0
+        level_46 = len(df_tmp.query("N_EXERCISES==50 and TOTAL_SCORE==50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=150")) > 0
         
         # arceus  
         level_47 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0

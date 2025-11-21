@@ -449,7 +449,7 @@ if "pending_n_exercises" not in st.session_state:
 if "pending_type" not in st.session_state:
     st.session_state.pending_type = st.session_state.type_exercise
 
-USERS  = ["Raphael", "Mama", "Papa", "Lea"]
+USERS  = ["Raphael", "Mama", "Papa", "Lea", "Dimi"]
 DIFFS  = ["Makkelijk", "Middelmatig", "Moeilijk"]
 TABLES = [2, 3, 4, 5, 6, 7, 8, 9]
 
