@@ -882,6 +882,9 @@ def render_pokemon_header(target, pokemon_list):
                 """,
                 unsafe_allow_html=True
             )
+        st.markdown("<div style='font-size: 12px; color: grey;'>Ga naar 'Level' om te zien welke Pokémons je hebt verdiend en wat je nog moet doen om de volgende te krijgen!</div>", unsafe_allow_html=True)
+        st.write("")
+
 
 def get_pokemon_hover_text(pokemon):
     level_info = get_level_info()
