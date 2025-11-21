@@ -284,11 +284,12 @@ if chosen_id == '3':
 
     st.header(f"Statistieken voor {st.session_state.user}")
     df_scores = read_score_df(st.session_state.user)
-    df_scores_vermenigvuldiging = df_scores.query("TYPE_EXERCISE == 'vermenigvuldiging'")
     
     if df_scores.empty:
         st.info("Geen statistieken beschikbaar.")
     else:
+        df_scores_vermenigvuldiging = df_scores.query("TYPE_EXERCISE == 'vermenigvuldiging'")
+
         st.subheader("Tijd geoefend per dag")
         # display calendar table
         df = create_calendar_table(df_scores, "duration")
@@ -410,29 +411,29 @@ if chosen_id == '2':
 
     st.header(f"Level van {st.session_state.user}")
     df_scores = read_score_df(user=st.session_state.user)
-    if df_scores.empty:
-        st.info("Geen level beschikbaar.")
-    else:
-        df_table = generate_level_chart(df_scores, st.session_state.user)
+    # if df_scores.empty:
+        # st.info("Geen level beschikbaar.")
+    # else:
+    df_table = generate_level_chart(df_scores, st.session_state.user)
 
-        df_table = df_table.drop(columns=["Level"])
+    df_table = df_table.drop(columns=["Level"])
 
-        st.data_editor(
-            df_table,
-            column_config={
-                "Afbeelding": st.column_config.ImageColumn("Afbeelding"),
-                # "Level": "Level",
-                "Wat moet je kunnen om deze Pokémon te krijgen?": st.column_config.TextColumn(
-                    "Beschrijving",
-                    width="large"  # makes the column use extra space
-                    ),
-                "Pokémon": "Pokémon",
-            },
-            hide_index=True,
-            width="stretch",
-            # round up height to nearest integer
-            height=math.ceil(37*len(df_table)) # 36.36 pixels per row
-        )
+    st.data_editor(
+        df_table,
+        column_config={
+            "Afbeelding": st.column_config.ImageColumn("Afbeelding"),
+            # "Level": "Level",
+            "Wat moet je kunnen om deze Pokémon te krijgen?": st.column_config.TextColumn(
+                "Beschrijving",
+                width="large"  # makes the column use extra space
+                ),
+            "Pokémon": "Pokémon",
+        },
+        hide_index=True,
+        width="stretch",
+        # round up height to nearest integer
+        height=math.ceil(37*len(df_table)) # 36.36 pixels per row
+    )
 
 
 # (5) SIDEBAR ----
