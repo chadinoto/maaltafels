@@ -136,7 +136,7 @@ chosen_id = stx.tab_bar(data=[
     stx.TabBarItemData(id=2, title="Level", description=""),
     stx.TabBarItemData(id=3, title="Stats", description=""),
 ], default=1)
-st.markdown("<hr style='margin:0;border:none;border-top:1px solid red;' />", unsafe_allow_html=True)
+# st.markdown("<hr style='margin:0;border:none;border-top:1px solid red;' />", unsafe_allow_html=True)
 
 # st.info(f"{chosen_id=}")
 
