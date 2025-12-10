@@ -228,6 +228,7 @@ def add_prob(df):
 def get_table_probs(table):
     print_function("get_table_probs()")
     df = read_score_df(user=st.session_state.user)
+    df = df.query("TYPE_EXERCISE == 'vermenigvuldiging'")
     eps = 1e-6
     # groupby TAFEL and RAND_NUM and take average of SCORE and DURATION
     table_stats = (
@@ -1095,7 +1096,6 @@ def reset_exercises():
     st.session_state.type_exercise = new_type
     st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
 
-    # ---- your side effects (unchanged from your function) ----
     reset_progress(st.session_state.n_exercises)
     (
         st.session_state.exercise,
