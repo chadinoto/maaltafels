@@ -154,7 +154,7 @@ def save_score_df(df, user_id=None):
 def generate_exercise(accepted_products, level, exercise_idx, type):
     print_title("NEW EXERCISE")
     print_function("New Exercise Generated: vermenigvuldiging")
-    if type == "vermenigvuldiging":
+    if type == "vermenigvuldiging": 
         random_accepted_product = accepted_products[
             random.randint(0, len(accepted_products) - 1)
         ]
