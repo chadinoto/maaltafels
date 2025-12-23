@@ -1086,7 +1086,6 @@ def reset_exercises():
     new_tables = list(pending_tables)
     new_n = int(st.session_state.get("pending_n_exercises", st.session_state.n_exercises))
     new_n = max(1, min(1000, new_n))
-    new_5 = max(1, min(1000, new_n))
 
     # Skip heavy work when nothing changed
     if (
