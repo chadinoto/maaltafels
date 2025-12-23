@@ -711,7 +711,8 @@ def calculate_level():
         level_10 = False; level_11 = False; level_12 = False; level_13 = False; level_14 = False; level_15 = False; level_16 = False; level_17 = False; level_18 = False;
         level_19 = False; level_20 = False; level_21 = False; level_22 = False; level_23 = False; level_24 = False; level_25 = False; level_26 = False; level_27 = False;
         level_28 = False; level_29 = False; level_30 = False; level_31 = False; level_32 = False; level_33 = False; level_34 = False; level_35 = False; level_36 = False; level_37 = False;
-        level_38 = False; level_39 = False; level_40 = False;level_39 = False; level_40 = False;level_41 = False; level_42 = False; level_43 = False; level_44 = False; level_45 = False; level_46 = False; level_47 = False
+        level_38 = False; level_39 = False; level_40 = False;level_39 = False; level_40 = False;level_41 = False; level_42 = False; level_43 = False; level_44 = False; level_45 = False; level_46 = False; 
+        level_47 = False; level_48 = False; level_49 = False
     else:
         
         df_tmp = (df 
@@ -781,8 +782,11 @@ def calculate_level():
         level_45 = len(df_tmp.query("N_EXERCISES==50 and TOTAL_SCORE==50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=200")) > 0
         level_46 = len(df_tmp.query("N_EXERCISES==50 and TOTAL_SCORE==50 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=150")) > 0
         
+        level_47 = len(df_tmp.query("N_EXERCISES==100 and TOTAL_SCORE==100 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=300")) > 0
+        level_48 = len(df_tmp_deling.query("N_EXERCISES==100 and TOTAL_SCORE==100 and LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=300")) > 0
+
         # arceus  
-        level_47 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
+        level_49 = len(df_tmp.query("LEN_TAFELS_IN_OEF==8 and TOTAL_MINUTES<=45")) > 0
 
     return {
         0: level_0,
@@ -833,6 +837,8 @@ def calculate_level():
         45: level_45,
         46: level_46,
         47: level_47,
+        48: level_48,
+        49: level_49
     }
 
 def get_all_pokemons():
@@ -970,9 +976,13 @@ def get_level_info():
         46: (46, 200, "Alle tafels tot 9: 50 oefeningen juist in 2 minuten en 30 seconden", 
              "Necrozma", 
              "Lichtabsorberende ultra-Pokémon die verwoestende energieaanvallen kan ontketenen."),
+        
+        47: (47, 220, "Alle tafels tot 9: 100 oefeningen juist in 5 minuten", "Charizard-Mega-X", "Vuurloze draakvorm met extreme fysieke kracht en meedogenloze aanvallen die alles op zijn pad verbrandt met pure woede."),
+        
+        48: (48, 240, "Alle deeltafels tot 9: 100 oefeningen juist in 5 minuten", "Palkia", "Legendarische Pokémon die ruimte en dimensies beheerst en stabiliteit brengt in een uitgestrekte wereld."),
 
         # Arceus verplaatst naar 43    
-        47: (47, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
+        49: (49, 720, "Alle tafels tot 9: 20 oefeningen juist in 45 seconden", "Arceus", "De God van alle Pokémon; schepper van het Pokémon-universum."),
     }
 
     return level_info

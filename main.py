@@ -125,6 +125,7 @@ render_pokemon_header(pokemon_header, st.session_state.pokemon)
 #     st.session_state.render_pokemon = False
     
 # Initial render
+
 # render_pokemon_header(pokemon_header, st.session_state.pokemon)
 
 # tabs = st.tabs(["Oefeningen", "Level","Stats"])
