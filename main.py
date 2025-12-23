@@ -491,7 +491,7 @@ st.sidebar.multiselect(
 st.sidebar.number_input(
     "Aantal oefeningen per ronde:",
     min_value=1,
-    max_value=50,
+    max_value=1000,
     step=1,
     key="pending_n_exercises",
     on_change=reset_exercises,
