@@ -333,7 +333,7 @@ if chosen_id == '3':
                                 .groupby("DATE_START", as_index=False)
                                 .agg(gemiddelde_tijd_per_tafel = ("DURATION_TIME", "mean"))
         )
-        # fill missing DATE_STARTs with NA
+        # fill missing DATE_STARTs with NA 
         
         full_date_range = pd.date_range(start=avg_time_table["DATE_START"].min(),
                                         end=avg_time_table["DATE_START"].max())
