@@ -599,8 +599,9 @@ def create_calendar_table(df, display):
                 MONDAY_DATE=lambda x: x["DATE_START"]
                 - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
             )
+            .assign(YEAR=lambda x:x["DATE_START"].dt.isocalendar().year)
             .assign(
-                WEEK_LABEL=lambda x: "Week "    
+                WEEK_LABEL=lambda x: x["YEAR"].astype(str) + " Week "    
                 + x["WEEK"].astype(str)
                 + " ("
                 + x["MONDAY_DATE"].dt.strftime("%d/%m")
@@ -623,8 +624,9 @@ def create_calendar_table(df, display):
                 MONDAY_DATE=lambda x: x["DATE_START"]
                 - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
             )
+            .assign(YEAR=lambda x:x["DATE_START"].dt.isocalendar().year)
             .assign(
-                WEEK_LABEL=lambda x: "Week "    
+                WEEK_LABEL=lambda x: x["YEAR"].astype(str) + " Week "    
                 + x["WEEK"].astype(str)
                 + " ("
                 + x["MONDAY_DATE"].dt.strftime("%d/%m")
@@ -1062,6 +1064,8 @@ def score_per_set(df_scores):
      .assign(TIJD=lambda x: x["TIJD"].apply(lambda d: translate_sec_to_min_sec(d)))
      .sort_values(by=["DATE_START","TIME_START"], ascending=[False,False])
      .reset_index()
+     .drop(columns=["index"])
+     .assign(SCORE=lambda x:x["SCORE"].astype(int))
     )
 
     return df_out
@@ -1201,3 +1205,32 @@ def plot_progress(df, displaytype='SCORE'):
 
     return fig
 
+def plot_avg_time_per_maaltafel_evolution(avg_time_table):
+    print_function("plot_avg_time_per_maaltafel_evolution()")
+
+    # Filter out NaN values before plotting
+    avg_time_table_filtered = avg_time_table.dropna(subset=["gemiddelde_tijd_per_tafel"])
+    
+    fig = px.line(
+        avg_time_table_filtered,
+        x="DATE_START",
+        y="gemiddelde_tijd_per_tafel",
+        labels={"DATE_START": "Datum", "AVG_TIME_PER_MAALTAFEL": "Gemiddelde tijd per maaltafel (sec)"},
+        markers=True,
+        # line color = branded color blue
+        color_discrete_sequence=["#1f77b4"]
+    )
+
+    fig.update_traces(
+        textposition="top center",
+        textfont_size=10,
+        mode="lines+markers+text"
+    )
+
+    fig.update_xaxes(showticklabels=True, title_text="Datum")
+    fig.update_yaxes(title_text="Gemiddelde tijd per maaltafel (sec)")
+    
+    # add text on top of the marker
+    fig.update_traces(text=avg_time_table_filtered["gemiddelde_tijd_per_tafel"].round(2).astype(str))
+
+    return fig

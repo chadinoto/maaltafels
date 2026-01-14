@@ -290,11 +290,64 @@ if chosen_id == '3':
         st.info("Geen statistieken beschikbaar.")
     else:
         df_scores_vermenigvuldiging = df_scores.query("TYPE_EXERCISE == 'vermenigvuldiging'")
+        df_scores_deling = df_scores.query("TYPE_EXERCISE == 'deling'")
 
         st.subheader("Tijd geoefend per dag")
         # display calendar table
         df = create_calendar_table(df_scores, "duration")
         st.dataframe(df, width="stretch")
+        
+        st.subheader("Set pogingen")
+        df_table = score_per_set(df_scores)
+        st.dataframe(
+            df_table,
+            hide_index=True,
+            width="stretch",
+        )
+        
+        st.subheader("Gemiddelde tijd per maaltafel")
+        avg_time_table = (df_scores_vermenigvuldiging
+                                .assign(DATE_START=lambda d: pd.to_datetime(d["DATE_START"]).dt.normalize())
+                                .groupby("DATE_START", as_index=False)
+                                .agg(gemiddelde_tijd_per_tafel = ("DURATION_TIME", "mean"))
+        )
+        # fill missing DATE_STARTs with NA
+        
+        full_date_range = pd.date_range(start=avg_time_table["DATE_START"].min(),
+                                        end=avg_time_table["DATE_START"].max())
+        
+        avg_time_table = (
+            avg_time_table.set_index("DATE_START")
+            .reindex(full_date_range, fill_value=np.nan)
+            .rename_axis("DATE_START")
+            .reset_index()
+        )
+        
+        # plot avg time per day
+        plot = plot_avg_time_per_maaltafel_evolution(avg_time_table)
+        st.plotly_chart(plot)
+        
+        st.subheader("Gemiddelde tijd per deeltafel")
+        avg_time_table = (df_scores_deling
+                                .assign(DATE_START=lambda d: pd.to_datetime(d["DATE_START"]).dt.normalize())
+                                .groupby("DATE_START", as_index=False)
+                                .agg(gemiddelde_tijd_per_tafel = ("DURATION_TIME", "mean"))
+        )
+        # fill missing DATE_STARTs with NA
+        
+        full_date_range = pd.date_range(start=avg_time_table["DATE_START"].min(),
+                                        end=avg_time_table["DATE_START"].max())
+        
+        avg_time_table = (
+            avg_time_table.set_index("DATE_START")
+            .reindex(full_date_range, fill_value=np.nan)
+            .rename_axis("DATE_START")
+            .reset_index()
+        )
+        
+        # plot avg time per day
+        plot = plot_avg_time_per_maaltafel_evolution(avg_time_table)
+        st.plotly_chart(plot)
         
         st.subheader("Score per dag")
         # display calendar table
@@ -331,14 +384,10 @@ if chosen_id == '3':
             },
         )
         
-        st.subheader("Set pogingen")
-        df_table = score_per_set(df_scores)
-        st.dataframe(
-            df_table,
-            hide_index=True,
-            width="stretch",
-        )
+
+
         
+        st.subheader("Evolutie tijd per tafel")
 
         st.subheader("Kans dat een bepaalde tafel wordt gekozen")
         prob_table = generate_prob_table(df_scores_vermenigvuldiging)
