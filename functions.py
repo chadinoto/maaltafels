@@ -585,6 +585,8 @@ def create_calendar_table(df, display):
             # change to categorical with ordered categories
             .assign(WEEKDAY=lambda x: pd.Categorical(x["WEEKDAY"], ordered=True, categories=["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"]))
     )
+    
+
 
     if display == "score":
         df_calendar = (df_calendar      
@@ -613,30 +615,13 @@ def create_calendar_table(df, display):
             .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
         )
     elif display == "duration":
-        df_calendar = (df_calendar      
-            .assign(
-                TEXT=lambda x: "Tijd: "
-                + x["MIN_PER_DAG"].apply(lambda y: str(int(np.ceil(y))))
-                + " min"
-            )
-            .assign(WEEK=lambda x: x["DATE_START"].dt.isocalendar().week)
-            .assign(
-                MONDAY_DATE=lambda x: x["DATE_START"]
-                - pd.to_timedelta(x["DATE_START"].dt.weekday, unit="D")
-            )
-            .assign(YEAR=lambda x:x["DATE_START"].dt.isocalendar().year)
-            .assign(
-                WEEK_LABEL=lambda x: x["YEAR"].astype(str) + " Week "    
-                + x["WEEK"].astype(str)
-                + " ("
-                + x["MONDAY_DATE"].dt.strftime("%d/%m")
-                + ")"
-            )
-            .groupby(["WEEK_LABEL", "WEEKDAY"], observed=True)
-            .agg(TEXT=("TEXT", "first"))
-            .reset_index()
-            .pivot(index="WEEK_LABEL", columns="WEEKDAY", values="TEXT")
-        )
+        df_calendar['MIN_PER_DAG'] = "Tijd: " + np.ceil(df_calendar['MIN_PER_DAG']).astype(int).astype(str) + " min"
+        df_calendar['WEEKSTART'] = df_calendar['DATE_START'] - pd.to_timedelta(df_calendar['DATE_START'].dt.weekday, unit='D')
+        df_calendar = df_calendar.sort_values('WEEKSTART')
+        df_calendar = df_calendar.pivot(index="WEEKSTART", columns="WEEKDAY", values="MIN_PER_DAG")
+        df_calendar = df_calendar.reset_index()
+        df_calendar['WEEKSTART'] = df_calendar['WEEKSTART'].dt.strftime("%d %b'%y")
+        df_calendar.set_index('WEEKSTART', inplace=True)
 
     # Reorder columns to maintain proper weekday order
     weekday_order = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"]
