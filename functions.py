@@ -623,7 +623,7 @@ def create_calendar_table(df, display):
         df_calendar['WEEKSTART'] = df_calendar['WEEKSTART'].dt.strftime("%d %b'%y")
         df_calendar.set_index('WEEKSTART', inplace=True)
 
-    # Reorder columns to maintain proper weekday order
+    # Reorder columns to maintain proper weekday order 
     weekday_order = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"]
     existing_weekdays = [day for day in weekday_order if day in df_calendar.columns]
     df_calendar = df_calendar[existing_weekdays]
