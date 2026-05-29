@@ -195,8 +195,7 @@ if chosen_id == '1':
         # raw = st.session_state.user_answer_str.strip()
         raw = st.session_state.user_answer_num
 
-        st.session_state.exercise_counter = st.session_state.exercise_counter + 1
-        if not raw:
+        if raw is None:
             st.warning("Vul eerst een antwoord in.")
         else:
             try:
@@ -205,9 +204,12 @@ if chosen_id == '1':
             except ValueError:
                 st.error("Gebruik alleen cijfers.")
             else:
+                st.session_state.exercise_counter = st.session_state.exercise_counter + 1
                 st.session_state.prev_exercise = st.session_state.exercise
                 st.session_state.prev_correct = st.session_state.correct
                 st.session_state.last_result = "correct" if user_answer == st.session_state.correct else "wrong"
+                # paint this exercise's dot + update score once, right when it's answered
+                update_progress(st.session_state.exercise_counter, st.session_state.last_result)
                 # add_score_row()
                 add_answer_row_to_db()
                 (
@@ -224,11 +226,12 @@ if chosen_id == '1':
 
     # add full line
     st.markdown("---")
-    update_progress(st.session_state.exercise_counter, st.session_state.last_result)
+    # progress is updated once per answer in the submit handler above;
+    # here we only render the stored dots so they survive tab switches / reruns
     render_progress()
 
     # (2.6) When finished ----
-    if st.session_state.exercise_counter == st.session_state.n_exercises:
+    if st.session_state.exercise_counter >= st.session_state.n_exercises:
         print_title("SET DONE!")
         st.session_state.df_scores = read_score_df_updated_db(user=st.session_state.user)
         st.session_state.status = 0
